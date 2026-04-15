@@ -22,8 +22,9 @@
   nav button { background: transparent; border: none; color: rgba(255,255,255,.8); padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; font-family: var(--font); transition: background .15s; white-space: nowrap; }
   nav button:hover, nav button.active { background: rgba(255,255,255,.15); color: #fff; }
   nav .spacer { flex: 1; }
-  nav .store-toggle { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 5px; padding: 4px 10px; font-size: 12px; cursor: pointer; color: #fff; font-family: var(--font); }
-  nav .store-toggle:hover { background: rgba(255,255,255,.22); }
+  .store-sel { background:transparent;border:none;color:rgba(255,255,255,.75);padding:5px 11px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500;font-family:var(--font);transition:all .15s; }
+  .store-sel:hover { background:rgba(255,255,255,.15);color:#fff; }
+  .store-sel.active { background:rgba(255,255,255,.22);color:#fff;font-weight:700; }
 
   .main { max-width: 1280px; margin: 0 auto; padding: 20px 16px; }
   .page { display: none; }
@@ -181,14 +182,18 @@
 
 <!-- NAV -->
 <nav>
-  <div class="logo">MJSR Store Portal <span>v2.0</span></div>
+  <div class="logo">MJSR Store Portal <span>v3.0</span></div>
   <button class="active" onclick="showPage('dashboard')">Dashboard</button>
   <button onclick="showPage('stock')">Stock View</button>
   <button onclick="showPage('transactions')">Transactions</button>
   <button onclick="showPage('monthly')">Monthly Check</button>
   <button onclick="showPage('report')">Report</button>
   <div class="spacer"></div>
-  <button class="store-toggle" id="storeToggleBtn" onclick="toggleStore()">Chairlift Store ▾</button>
+  <div style="display:flex;gap:2px;background:rgba(0,0,0,.15);border-radius:6px;padding:3px;">
+    <button class="store-sel active" id="ss-chairlift" onclick="setStore('chairlift')">Chairlift</button>
+    <button class="store-sel" id="ss-civil" onclick="setStore('civil')">Civil</button>
+    <button class="store-sel" id="ss-pistenbully" onclick="setStore('pistenbully')">PistenBully</button>
+  </div>
 </nav>
 
 <div class="main">
@@ -196,7 +201,7 @@
   <!-- DASHBOARD -->
   <div class="page active" id="page-dashboard">
     <div class="section-title">Store Dashboard</div>
-    <div class="section-sub" id="dashSub">Chairlift Store overview</div>
+    <div class="section-sub" id="dashSub">Store overview</div>
     <div class="stat-grid" id="statGrid"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div class="card">
@@ -267,6 +272,7 @@
             <select id="txnStore" onchange="clearItemSearch()">
               <option value="chairlift">Chairlift Store</option>
               <option value="civil">Civil Store</option>
+              <option value="pistenbully">PistenBully Store</option>
             </select>
           </div>
           <div class="fg frow" style="position:relative;">
@@ -415,7 +421,8 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2JmvXXOluxC-1unKKJ
 // CATEGORIES
 // ============================================================
 const CATS_CHAIRLIFT = ['Spare Parts','Tools','Machine Tools','Lubricants & Consumables','Rescue','SMS Jackets','Fixed Assets'];
-const CATS_CIVIL = ['Civil Materials','Plumbing','Electrical','Carpentry','Masonry','Miscellaneous'];
+const CATS_CIVIL = ['Welding & Fabrication','Abrasives & Discs','Paints & Finishes','Timber & Civil','Fixings & Fasteners','Consumables & Sealants'];
+const CATS_PISTENBULLY = ['Wheels & Tracks','Axels','Sprocket Drive','Engine','Tools & Spares'];
 
 // ============================================================
 // STATE
@@ -423,7 +430,7 @@ const CATS_CIVIL = ['Civil Materials','Plumbing','Electrical','Carpentry','Mason
 const S = {
   store: 'chairlift',
   page: 'dashboard',
-  stock: { chairlift: [], civil: [] },
+  stock: { chairlift: [], civil: [], pistenbully: [] },
   transactions: [],
   checkStatus: 'none',
   checkPeriod: '',
@@ -476,12 +483,14 @@ async function init() {
 async function loadStock(showLoader) {
   if (showLoader) loading(true, 'Loading stock...');
   try {
-    const [cl, cv] = await Promise.all([
+    const [cl, cv, pb] = await Promise.all([
       api({ action: 'getStock', store: 'chairlift' }),
-      api({ action: 'getStock', store: 'civil' })
+      api({ action: 'getStock', store: 'civil' }),
+      api({ action: 'getStock', store: 'pistenbully' })
     ]);
     S.stock.chairlift = cl.items;
     S.stock.civil = cv.items;
+    S.stock.pistenbully = pb.items;
     refreshCurrentPage();
   } catch(e) { alert('Load stock error: ' + e.message); }
   finally { if (showLoader) loading(false); }
@@ -505,7 +514,7 @@ function showPage(page) {
   S.page = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('nav button:not(.store-toggle)').forEach((b, i) => {
+  document.querySelectorAll('nav button:not(.store-sel)').forEach((b, i) => {
     b.classList.toggle('active', ['dashboard','stock','transactions','monthly','report'][i] === page);
   });
   if (page === 'dashboard')    renderDashboard();
@@ -515,9 +524,10 @@ function showPage(page) {
   if (page === 'report')       renderReportPage();
 }
 
-function toggleStore() {
-  S.store = S.store === 'chairlift' ? 'civil' : 'chairlift';
-  document.getElementById('storeToggleBtn').textContent = (S.store === 'chairlift' ? 'Chairlift Store' : 'Civil Store') + ' \u25be';
+function setStore(store) {
+  S.store = store;
+  document.querySelectorAll('.store-sel').forEach(b => b.classList.remove('active'));
+  document.getElementById('ss-' + store).classList.add('active');
   showPage(S.page);
 }
 
@@ -528,7 +538,7 @@ function refreshCurrentPage() { showPage(S.page); }
 // ============================================================
 function renderDashboard() {
   const items = S.stock[S.store];
-  const storeName = S.store === 'chairlift' ? 'Chairlift Store' : 'Civil Store';
+  const storeName = S.store === 'chairlift' ? 'Chairlift Store' : S.store === 'civil' ? 'Civil Store' : 'PistenBully Store';
   document.getElementById('dashSub').textContent = storeName + ' overview';
 
   const totalValue = items.reduce((s,i) => s + i.qty * i.price, 0);
@@ -580,7 +590,7 @@ function renderStockPage() {
   const cur = sel.value;
   sel.innerHTML = '<option value="">All Categories</option>' + cats.map(c=>`<option value="${c}"${c===cur?' selected':''}>${c}</option>`).join('');
   // Also update add item cat list
-  const cats2 = S.store === 'chairlift' ? CATS_CHAIRLIFT : CATS_CIVIL;
+  const cats2 = S.store === 'pistenbully' ? CATS_PISTENBULLY : S.store === 'civil' ? CATS_CIVIL : CATS_CHAIRLIFT;
   document.getElementById('addCat').innerHTML = cats2.map(c=>`<option value="${c}">${c}</option>`).join('');
   renderStockTable();
 }
@@ -1010,7 +1020,7 @@ function buildReport(r) {
 // ADD ITEM
 // ============================================================
 function openAddItem() {
-  const cats = S.store==='chairlift' ? CATS_CHAIRLIFT : CATS_CIVIL;
+  const cats = S.store==='pistenbully' ? CATS_PISTENBULLY : S.store==='civil' ? CATS_CIVIL : CATS_CHAIRLIFT;
   document.getElementById('addCat').innerHTML = cats.map(c=>`<option value="${c}">${c}</option>`).join('');
   document.getElementById('addStore').value = S.store;
   document.getElementById('addName').value='';
@@ -1130,8 +1140,12 @@ function catClass(cat) {
   const m = {
     'Spare Parts':'c-spare','Tools':'c-tools','Machine Tools':'c-mach',
     'Lubricants & Consumables':'c-lube','Rescue':'c-rescue','SMS Jackets':'c-sms',
-    'Fixed Assets':'c-asset','Civil Materials':'c-civil','Plumbing':'c-civil',
-    'Electrical':'c-spare','Carpentry':'c-tools','Masonry':'c-lube','Miscellaneous':'c-asset'
+    'Fixed Assets':'c-asset',
+    'Welding & Fabrication':'c-mach','Abrasives & Discs':'c-tools',
+    'Paints & Finishes':'c-sms','Timber & Civil':'c-civil',
+    'Fixings & Fasteners':'c-spare','Consumables & Sealants':'c-lube',
+    'Wheels & Tracks':'c-civil','Axels':'c-mach','Sprocket Drive':'c-spare',
+    'Engine':'c-rescue','Tools & Spares':'c-tools'
   };
   return m[cat]||'c-asset';
 }
