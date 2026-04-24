@@ -121,7 +121,7 @@
   .txn-row:last-child{border-bottom:none;}
   .txn-type{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
   .tt-in{background:#dcfce7;color:#15803d;} .tt-out{background:#fee2e2;color:#991b1b;}
-  .tt-adj{background:#fef3c7;color:#92400e;} .tt-chk{background:#dbeafe;color:#1d4ed8;}
+  .tt-adj{background:#fef3c7;color:#92400e;} .tt-chk{background:#dbeafe;color:#1d4ed8;} .tt-scrap{background:#fdf2f8;color:#701a75;}
   .txn-info{flex:1;} .txn-name{font-weight:500;} .txn-meta{font-size:11px;color:var(--muted);margin-top:1px;}
   .txn-qty{font-weight:700;white-space:nowrap;} .txn-qty.pos{color:var(--green);} .txn-qty.neg{color:var(--red);}
   .txn-date{font-size:11px;color:var(--muted);white-space:nowrap;}
@@ -182,10 +182,29 @@
   .empty{text-align:center;padding:32px 20px;color:var(--muted);}
   mark{background:#fef08a;padding:1px 2px;border-radius:2px;}
 
+
+  /* BIN CARD PAGE */
+  .scrap-alert { background:#fdf2f8;border:1px solid #f0abfc;color:#701a75;padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px; }
+  .bc-header { background:linear-gradient(135deg,#1e293b 0%,#475569 100%);color:#fff;padding:20px 24px;border-radius:8px;margin-bottom:16px; }
+  .bc-header h2 { font-size:18px;margin-bottom:2px; }
+  .bc-meta { display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px;font-size:12px; }
+  .bc-meta-item { background:rgba(255,255,255,.12);border-radius:5px;padding:6px 10px; }
+  .bc-meta-label { opacity:.7;font-size:11px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px; }
+  .bc-meta-value { font-weight:600; }
+  .scrap-row { display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;cursor:pointer;transition:background .1s; }
+  .scrap-row:hover { background:#fdf2f8; }
+  .scrap-row:last-child { border-bottom:none; }
+  .scrap-qty { font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;background:#fdf2f8;color:#701a75;white-space:nowrap; }
+  /* Print bin card */
+  .print-bincard { display:none; }
+  @media print {
+    .print-bincard { display:block!important; }
+    .no-print { display:none!important; }
+  }
   @media print{
     nav,.filter-bar,.btn-row,#reportControls{display:none!important;}
     .page{display:block!important;}
-    #page-dashboard,#page-stock,#page-transactions,#page-monthly{display:none!important;}
+    #page-dashboard,#page-stock,#page-transactions,#page-monthly,#page-bincard{display:none!important;}
     #page-report{display:block!important;}
     .main{padding:0;max-width:none;}
   }
@@ -222,6 +241,7 @@
   <button class="nav-page" onclick="showPage('transactions')">Transactions</button>
   <button class="nav-page" onclick="showPage('monthly')">Monthly Check</button>
   <button class="nav-page" onclick="showPage('report')">Report</button>
+  <button class="nav-page" onclick="showPage('bincard')">Bin Card</button>
   <div class="nav-spacer"></div>
   <div class="store-dropdown-wrap">
     <span class="store-dot" id="storeDot" style="background:#1d4ed8;"></span>
@@ -432,6 +452,108 @@
     </div>
   </div>
 
+  <!-- BIN CARD -->
+  <div class="page" id="page-bincard">
+    <div class="section-title">Bin Card — Scrap &amp; Defect Log</div>
+    <div class="section-sub">Log defective or condemned items for write-off. Each entry reduces stock quantity and creates a permanent record.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+      <!-- LOG SCRAP FORM -->
+      <div class="card">
+        <div class="card-title">Log Scrap / Write-Off</div>
+        <div class="scrap-alert"><span>⚠</span><div>This action permanently reduces stock quantity. Requires admin PIN. Cannot be undone.</div></div>
+        <div class="fgrid">
+          <div class="fg">
+            <label>Store</label>
+            <select id="scrapStore" onchange="clearScrapItemSearch()">
+              <option value="chairlift">Chairlift Store</option>
+              <option value="civil">Civil Store</option>
+              <option value="pistenbully">PistenBully Store</option>
+              <option value="electrical">Electrical Store</option>
+              <option value="zipline">Zipline Store</option>
+              <option value="giantswing">Giant Swing Store</option>
+              <option value="snowmaking">Snowmaking Store</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Date</label>
+            <input type="date" id="scrapDate">
+          </div>
+          <div class="fg frow" style="position:relative;">
+            <label>Item (type to search)</label>
+            <input type="text" id="scrapItemSearch" placeholder="Search item name..." oninput="showScrapSuggestions()" autocomplete="off">
+            <div id="scrapSuggBox" style="position:absolute;top:62px;left:0;right:0;z-index:50;"></div>
+          </div>
+          <div class="fg">
+            <label>Quantity to Scrap</label>
+            <input type="number" id="scrapQty" placeholder="0" min="1" step="0.01">
+          </div>
+          <div class="fg frow">
+            <label>Condition / Reason for Condemnation</label>
+            <input type="text" id="scrapCondition" placeholder="e.g. Damaged beyond repair, Corroded, Failed inspection">
+          </div>
+          <div class="fg">
+            <label>GRN #</label>
+            <input type="text" id="scrapGRN" placeholder="GRN reference (if applicable)">
+          </div>
+          <div class="fg">
+            <label>SIR #</label>
+            <input type="text" id="scrapSIR" placeholder="SIR reference number">
+          </div>
+          <div class="fg">
+            <label>Condemned By</label>
+            <input type="text" id="scrapCondemnedBy" placeholder="e.g. Bilal Tariq">
+          </div>
+          <div class="fg">
+            <label>Approved By</label>
+            <input type="text" id="scrapApprovedBy" placeholder="e.g. Martin Schultz">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-danger" onclick="requirePIN('Log Scrap / Write-Off', submitScrap)">Log Scrap Entry</button>
+          <button class="btn btn-secondary" onclick="clearScrapForm()">Clear</button>
+        </div>
+      </div>
+
+      <!-- SCRAP LOG -->
+      <div class="card">
+        <div class="card-title">Scrap Log <span class="badge" id="scrapCountBadge">0</span></div>
+        <div class="filter-bar" style="margin-bottom:10px;">
+          <select id="scrapFStore" onchange="renderScrapLog()" style="flex:0 0 auto;">
+            <option value="">All Stores</option>
+            <option value="chairlift">Chairlift</option>
+            <option value="civil">Civil</option>
+            <option value="pistenbully">PistenBully</option>
+            <option value="electrical">Electrical</option>
+            <option value="zipline">Zipline</option>
+            <option value="giantswing">Giant Swing</option>
+            <option value="snowmaking">Snowmaking</option>
+          </select>
+          <input type="text" id="scrapFSearch" placeholder="Search item..." oninput="renderScrapLog()">
+          <button class="btn btn-secondary btn-sm" onclick="loadBinCard(true)">Refresh</button>
+        </div>
+        <div id="scrapLog" style="max-height:480px;overflow-y:auto;"></div>
+      </div>
+
+    </div>
+
+    <!-- PER-ITEM BIN CARD PRINT VIEW -->
+    <div id="binCardPrintArea" style="display:none;">
+      <div class="card" style="margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="card-title" style="margin-bottom:0;" id="binCardPrintTitle">Bin Card</div>
+          <div class="btn-row no-print" style="margin-top:0;">
+            <button class="btn btn-primary btn-sm" onclick="window.print()">Print Bin Card</button>
+            <button class="btn btn-secondary btn-sm" onclick="closeBinCardPrint()">Close</button>
+          </div>
+        </div>
+        <div id="binCardPrintContent"></div>
+      </div>
+    </div>
+  </div>
+
+
 </div>
 
 <!-- ADD ITEM MODAL -->
@@ -534,6 +656,8 @@ const S = {
   },
   activeCheckStore: null,  // which store is open in the check work area
   reportStore: null,
+  binCardEntries: [],
+  scrapItem: null,
   pinCb: null
 };
 
@@ -574,6 +698,7 @@ async function init() {
     }
     await loadStock(false);
     await loadTransactions(false);
+    await loadBinCard(false);
     showPage('dashboard');
   } catch(e) {
     alert('Init error: ' + e.message + '\n\nCheck SCRIPT_URL is correct.');
@@ -609,13 +734,14 @@ function showPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   document.querySelectorAll('.nav-page').forEach((b, i) => {
-    b.classList.toggle('active', ['dashboard','stock','transactions','monthly','report'][i] === page);
+    b.classList.toggle('active', ['dashboard','stock','transactions','monthly','report','bincard'][i] === page);
   });
   if (page === 'dashboard')    renderDashboard();
   if (page === 'stock')        renderStockPage();
   if (page === 'transactions') renderTransactionsPage();
   if (page === 'monthly')      renderMonthlyPage();
   if (page === 'report')       renderReportPage();
+  if (page === 'bincard')      renderBinCardPage();
 }
 
 const STORE_COLORS = {
@@ -813,7 +939,7 @@ function renderTxnLog() {
 function txnRowHtml(t) {
   const signs = {out:'-',in:'+',adj:'\u00b1',chk:'\u2714'};
   const sc    = t.type==='out'?'neg':t.type==='in'?'pos':'';
-  const tc    = {out:'tt-out',in:'tt-in',adj:'tt-adj',chk:'tt-chk'}[t.type]||'tt-adj';
+  const tc    = {out:'tt-out',in:'tt-in',adj:'tt-adj',chk:'tt-chk',scrap:'tt-scrap'}[t.type]||'tt-adj';
   const sname = STORE_NAMES[t.store] || t.store;
   return `<div class="txn-row">
     <span class="txn-type ${tc}">${t.type.toUpperCase()}</span>
@@ -1214,6 +1340,205 @@ async function saveAdjust() {
     alert(`Adjusted. Previous: ${r.prevQty} \u2192 New: ${newQty}`);
   } catch(e) { alert('Error: '+e.message); }
   finally { loading(false); }
+}
+
+
+// ============================================================
+// BIN CARD
+// ============================================================
+async function loadBinCard(showLoader) {
+  if (showLoader) loading(true, 'Loading scrap log...');
+  try {
+    const r = await api({ action:'getBinCard' });
+    S.binCardEntries = r.entries || [];
+    renderScrapLog();
+  } catch(e) { alert('Load error: '+e.message); }
+  finally { if (showLoader) loading(false); }
+}
+
+function renderBinCardPage() {
+  document.getElementById('scrapDate').value = todayStr();
+  document.getElementById('scrapStore').value = S.store;
+  if (!S.binCardEntries.length) loadBinCard(false);
+  else renderScrapLog();
+}
+
+// Item search for scrap form
+function clearScrapItemSearch() { S.scrapItem=null; document.getElementById('scrapItemSearch').value=''; document.getElementById('scrapSuggBox').innerHTML=''; }
+
+function showScrapSuggestions() {
+  const q     = document.getElementById('scrapItemSearch').value.toLowerCase();
+  const store = document.getElementById('scrapStore').value;
+  const box   = document.getElementById('scrapSuggBox');
+  if (!q) { box.innerHTML=''; return; }
+  const matches = S.stock[store].filter(i=>i.name.toLowerCase().includes(q)||i.desc.toLowerCase().includes(q)).slice(0,8);
+  if (!matches.length) { box.innerHTML=''; return; }
+  box.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);max-height:220px;overflow-y:auto;">
+    ${matches.map(i=>`<div onclick="pickScrapItem('${i.id}')" style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px;" onmouseover="this.style.background='#fdf2f8'" onmouseout="this.style.background=''">
+      <div style="font-weight:500;">${i.name}</div>
+      <div style="font-size:11px;color:var(--muted);">${i.cat} &bull; Current stock: <strong>${i.qty}</strong> ${i.unit}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function pickScrapItem(id) {
+  const store = document.getElementById('scrapStore').value;
+  S.scrapItem = S.stock[store].find(i=>i.id===id);
+  if (!S.scrapItem) return;
+  document.getElementById('scrapItemSearch').value = S.scrapItem.name + ' [' + S.scrapItem.id + ']';
+  document.getElementById('scrapSuggBox').innerHTML = '';
+}
+
+async function submitScrap() {
+  const store       = document.getElementById('scrapStore').value;
+  const qty         = parseFloat(document.getElementById('scrapQty').value);
+  const condition   = document.getElementById('scrapCondition').value.trim();
+  const grn         = document.getElementById('scrapGRN').value.trim();
+  const sir         = document.getElementById('scrapSIR').value.trim();
+  const condemnedBy = document.getElementById('scrapCondemnedBy').value.trim();
+  const approvedBy  = document.getElementById('scrapApprovedBy').value.trim();
+  const date        = document.getElementById('scrapDate').value;
+
+  if (!S.scrapItem)     { alert('Please select an item.'); return; }
+  if (!qty || qty <= 0) { alert('Enter a valid quantity to scrap.'); return; }
+  if (!condition)       { alert('Condition / reason is required.'); return; }
+  if (!condemnedBy)     { alert('Condemned By is required.'); return; }
+  if (!approvedBy)      { alert('Approved By is required.'); return; }
+  if (qty > S.scrapItem.qty) {
+    if (!confirm(`Warning: Scrapping ${qty} but only ${S.scrapItem.qty} in stock. Continue?`)) return;
+  }
+
+  loading(true, 'Logging scrap entry...');
+  try {
+    const r = await api({ action:'logScrap', pin:'1234', store,
+      itemId:S.scrapItem.id, qtyScrapped:qty, condition, grn, sir, condemnedBy, approvedBy, date });
+
+    // Update local stock
+    const item = S.stock[store].find(i=>i.id===S.scrapItem.id);
+    if (item) item.qty = r.newQty;
+
+    // Add to local bin card entries
+    S.binCardEntries.unshift({
+      id: r.scrapId, store, itemId:S.scrapItem.id, itemName:S.scrapItem.name,
+      cat:S.scrapItem.cat, unit:S.scrapItem.unit,
+      qtyBefore:r.prevQty, qtyScrapped:qty, qtyAfter:r.newQty,
+      condition, grn, sir, condemnedBy, approvedBy, date, timestamp:new Date().toISOString()
+    });
+
+    clearScrapForm();
+    renderScrapLog();
+    alert(`Scrap logged. ${r.itemName}: ${r.prevQty} → ${r.newQty} ${S.scrapItem.unit}`);
+  } catch(e) { alert('Error: '+e.message); }
+  finally { loading(false); }
+}
+
+function clearScrapForm() {
+  S.scrapItem = null;
+  document.getElementById('scrapItemSearch').value = '';
+  document.getElementById('scrapQty').value = '';
+  document.getElementById('scrapCondition').value = '';
+  document.getElementById('scrapGRN').value = '';
+  document.getElementById('scrapSIR').value = '';
+  document.getElementById('scrapCondemnedBy').value = '';
+  document.getElementById('scrapApprovedBy').value = '';
+  document.getElementById('scrapSuggBox').innerHTML = '';
+}
+
+function renderScrapLog() {
+  const sf = document.getElementById('scrapFStore').value;
+  const q  = (document.getElementById('scrapFSearch').value||'').toLowerCase();
+  const entries = S.binCardEntries.filter(e => {
+    return (!sf || e.store===sf) && (!q || e.itemName.toLowerCase().includes(q));
+  });
+  document.getElementById('scrapCountBadge').textContent = entries.length;
+  document.getElementById('scrapLog').innerHTML = entries.length
+    ? entries.map(e => `<div class="scrap-row" onclick="showBinCard('${e.itemId}','${e.store}')">
+        <div style="flex:1;">
+          <div style="font-weight:500;font-size:13px;">${e.itemName}</div>
+          <div style="font-size:11px;color:var(--muted);">${STORE_NAMES[e.store]} &bull; ${e.cat} &bull; ${e.date}</div>
+          <div style="font-size:11px;color:#701a75;margin-top:2px;">${e.condition}</div>
+        </div>
+        <span class="scrap-qty">-${e.qtyScrapped} ${e.unit}</span>
+        <span style="font-size:11px;color:var(--muted);">View Card</span>
+      </div>`).join('')
+    : '<div class="empty" style="padding:20px;">No scrap entries yet</div>';
+}
+
+function showBinCard(itemId, store) {
+  // Get all entries for this item
+  const entries = S.binCardEntries.filter(e=>e.itemId===itemId && e.store===store);
+  if (!entries.length) return;
+  const item = S.stock[store].find(i=>i.id===itemId);
+  const storeName = STORE_NAMES[store];
+  const e0 = entries[0]; // most recent for header
+
+  document.getElementById('binCardPrintTitle').textContent = 'Bin Card — ' + e0.itemName;
+
+  // Build print-style bin card matching the uploaded template
+  const rows = entries.map((e,i) => `<tr>
+    <td style="text-align:center;padding:6px 8px;border:1px solid #ccc;font-size:12px;">${entries.length - i}</td>
+    <td style="padding:6px 8px;border:1px solid #ccc;font-size:12px;">${e.date}</td>
+    <td style="padding:6px 8px;border:1px solid #ccc;font-size:12px;">${e.grn||'-'}</td>
+    <td style="padding:6px 8px;border:1px solid #ccc;font-size:12px;">${e.sir||'-'}</td>
+    <td style="text-align:center;padding:6px 8px;border:1px solid #ccc;font-size:12px;">-</td>
+    <td style="text-align:center;padding:6px 8px;border:1px solid #ccc;font-size:12px;color:#dc2626;font-weight:600;">${e.qtyScrapped}</td>
+    <td style="text-align:center;padding:6px 8px;border:1px solid #ccc;font-size:12px;">${e.qtyAfter}</td>
+    <td style="padding:6px 8px;border:1px solid #ccc;font-size:12px;">${e.condition}</td>
+    <td style="padding:6px 8px;border:1px solid #ccc;font-size:12px;">${e.condemnedBy}</td>
+    <td style="padding:6px 8px;border:1px solid #ccc;font-size:12px;">${e.approvedBy}</td>
+  </tr>`).join('');
+
+  document.getElementById('binCardPrintContent').innerHTML = `
+    <div style="font-family:Arial,sans-serif;font-size:13px;">
+      <!-- Header block matching uploaded template -->
+      <div style="text-align:center;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:16px;">SAMSONS GROUP OF COMPANIES (PVT) LTD.</div>
+        <div style="font-size:14px;">MALAM JABBA SKI RESORT</div>
+        <div style="font-size:18px;font-weight:700;margin-top:6px;text-decoration:underline;">STORE BIN CARD</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+        <tr>
+          <td style="padding:5px 8px;border:1px solid #ccc;width:50%;font-size:12px;"><strong>Article:</strong> ${e0.itemName}</td>
+          <td style="padding:5px 8px;border:1px solid #ccc;font-size:12px;"><strong>Department:</strong> ${storeName}</td>
+        </tr>
+        <tr>
+          <td style="padding:5px 8px;border:1px solid #ccc;font-size:12px;"><strong>Serial No / Code:</strong> ${item ? item.desc : e0.cat}</td>
+          <td style="padding:5px 8px;border:1px solid #ccc;font-size:12px;"><strong>Unit:</strong> ${e0.unit}</td>
+        </tr>
+        <tr>
+          <td style="padding:5px 8px;border:1px solid #ccc;font-size:12px;"><strong>Category:</strong> ${e0.cat}</td>
+          <td style="padding:5px 8px;border:1px solid #ccc;font-size:12px;"><strong>Item ID:</strong> ${itemId}</td>
+        </tr>
+      </table>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#475569;color:#fff;">
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;text-align:center;">S.No</th>
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;">Date</th>
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;">GRN #</th>
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;">SIR #</th>
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;text-align:center;">IN</th>
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;text-align:center;">OUT</th>
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;text-align:center;">Balance</th>
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;">Condition / Reason</th>
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;">Condemned By</th>
+            <th style="padding:7px 8px;border:1px solid #888;font-size:12px;">Approved By</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px;font-size:12px;">
+        <div style="border-top:1px solid #333;padding-top:6px;text-align:center;">Store Keeper</div>
+        <div style="border-top:1px solid #333;padding-top:6px;text-align:center;">Approved By (GM)</div>
+      </div>
+    </div>`;
+
+  document.getElementById('binCardPrintArea').style.display = '';
+  document.getElementById('binCardPrintArea').scrollIntoView({ behavior:'smooth' });
+}
+
+function closeBinCardPrint() {
+  document.getElementById('binCardPrintArea').style.display = 'none';
 }
 
 // ============================================================
