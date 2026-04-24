@@ -6,168 +6,190 @@
 <title>MJSR Store Management Portal</title>
 <style>
   :root {
-    --nav-bg: #475569; --nav-text: #fff;
-    --accent: #475569; --accent-light: #64748b; --accent-hover: #334155;
-    --bg: #f8f9fa; --card: #fff; --border: #e2e8f0;
-    --text: #1e293b; --text-muted: #64748b;
-    --success: #16a34a; --warning: #d97706; --danger: #dc2626;
-    --font: 'Segoe UI', system-ui, sans-serif;
+    --nav-bg:#475569; --accent:#475569; --accent-hover:#334155; --accent-light:#64748b;
+    --bg:#f8f9fa; --card:#fff; --border:#e2e8f0;
+    --text:#1e293b; --muted:#64748b;
+    --green:#16a34a; --amber:#d97706; --red:#dc2626;
+    --font:'Segoe UI',system-ui,sans-serif;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;}
 
-  nav { background: var(--nav-bg); color: var(--nav-text); display: flex; align-items: center; padding: 0 16px; height: 52px; gap: 4px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
-  nav .logo { font-weight: 700; font-size: 15px; letter-spacing: .5px; margin-right: 12px; white-space: nowrap; }
-  nav .logo span { color: #94a3b8; font-weight: 400; font-size: 12px; }
-  nav button { background: transparent; border: none; color: rgba(255,255,255,.8); padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; font-family: var(--font); transition: background .15s; white-space: nowrap; }
-  nav button:hover, nav button.active { background: rgba(255,255,255,.15); color: #fff; }
-  nav .spacer { flex: 1; }
-  .store-sel { background:transparent;border:none;color:rgba(255,255,255,.75);padding:5px 11px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500;font-family:var(--font);transition:all .15s; }
-  .store-sel:hover { background:rgba(255,255,255,.15);color:#fff; }
-  .store-sel.active { background:rgba(255,255,255,.22);color:#fff;font-weight:700; }
+  /* NAV */
+  nav{background:var(--nav-bg);color:#fff;display:flex;align-items:center;padding:0 14px;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.2);gap:4px;}
+  .nav-logo{font-weight:700;font-size:14px;letter-spacing:.4px;margin-right:10px;white-space:nowrap;}
+  .nav-logo span{color:#94a3b8;font-weight:400;font-size:11px;}
+  .nav-page{background:transparent;border:none;color:rgba(255,255,255,.75);padding:6px 11px;border-radius:5px;cursor:pointer;font-size:13px;font-family:var(--font);transition:background .15s;white-space:nowrap;}
+  .nav-page:hover,.nav-page.active{background:rgba(255,255,255,.15);color:#fff;}
+  .nav-spacer{flex:1;}
 
-  .main { max-width: 1280px; margin: 0 auto; padding: 20px 16px; }
-  .page { display: none; }
-  .page.active { display: block; }
+  /* STORE SELECTOR BAR — scrollable pill row */
+  .store-bar{display:flex;gap:4px;background:rgba(0,0,0,.18);border-radius:7px;padding:3px;overflow-x:auto;max-width:420px;scrollbar-width:none;}
+  .store-bar::-webkit-scrollbar{display:none;}
+  .store-btn{background:transparent;border:none;color:rgba(255,255,255,.7);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:500;font-family:var(--font);white-space:nowrap;transition:all .15s;}
+  .store-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
+  .store-btn.active{background:rgba(255,255,255,.22);color:#fff;font-weight:700;}
 
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
-  .card-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-  .badge { font-size: 11px; font-weight: 500; background: var(--bg); border: 1px solid var(--border); padding: 2px 7px; border-radius: 10px; color: var(--text-muted); }
+  /* STORE COLOUR ACCENTS */
+  .store-btn[data-store=chairlift].active{background:#1d4ed8;}
+  .store-btn[data-store=civil].active{background:#9a3412;}
+  .store-btn[data-store=pistenbully].active{background:#166534;}
+  .store-btn[data-store=electrical].active{background:#92400e;}
+  .store-btn[data-store=zipline].active{background:#6b21a8;}
+  .store-btn[data-store=giantswing].active{background:#0e7490;}
+  .store-btn[data-store=snowmaking].active{background:#1e3a5f;}
 
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px,1fr)); gap: 12px; margin-bottom: 20px; }
-  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
-  .stat .lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-  .stat .val { font-size: 22px; font-weight: 700; }
-  .stat .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  /* MAIN */
+  .main{max-width:1300px;margin:0 auto;padding:18px 16px;}
+  .page{display:none;}.page.active{display:block;}
 
-  .tbl-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: #f1f5f9; color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--border); white-space: nowrap; }
-  td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-  tr:hover td { background: #f8fafc; }
-  td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  td.iname { font-weight: 500; max-width: 230px; }
-  td.desc { color: var(--text-muted); font-size: 12px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* CARDS */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;margin-bottom:16px;}
+  .card-title{font-size:15px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .badge{font-size:11px;font-weight:500;background:var(--bg);border:1px solid var(--border);padding:2px 7px;border-radius:10px;color:var(--muted);}
 
-  .cat-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; text-transform: uppercase; letter-spacing: .3px; white-space: nowrap; }
-  .c-spare  { background:#dbeafe;color:#1d4ed8; } .c-tools  { background:#dcfce7;color:#15803d; }
-  .c-mach   { background:#fef3c7;color:#92400e; } .c-lube   { background:#f3e8ff;color:#7e22ce; }
-  .c-rescue { background:#fee2e2;color:#991b1b; } .c-sms    { background:#e0f2fe;color:#0369a1; }
-  .c-asset  { background:#f0fdf4;color:#166534; } .c-civil  { background:#fff7ed;color:#9a3412; }
+  /* STATS */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+  .stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+  .stat .val{font-size:22px;font-weight:700;}
+  .stat .sub{font-size:11px;color:var(--muted);margin-top:2px;}
 
-  .qty-zero { color:var(--danger);font-weight:700; } .qty-low { color:var(--warning);font-weight:600; } .qty-ok { color:var(--success); }
+  /* TABLE */
+  .tbl-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:#f1f5f9;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:left;border-bottom:2px solid var(--border);white-space:nowrap;}
+  td{padding:7px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+  tr:hover td{background:#f8fafc;}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  td.iname{font-weight:500;max-width:230px;}
+  td.desc{color:var(--muted);font-size:12px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-  .filter-bar { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center; }
-  .filter-bar input, .filter-bar select { padding:7px 11px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);background:var(--card);color:var(--text);outline:none; }
-  .filter-bar input:focus,.filter-bar select:focus { border-color:var(--accent-light);box-shadow:0 0 0 2px rgba(71,85,105,.12); }
-  .filter-bar input { flex:1;min-width:200px; }
+  /* CATEGORY BADGES */
+  .cb{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+  .c-spare{background:#dbeafe;color:#1d4ed8;} .c-tools{background:#dcfce7;color:#15803d;}
+  .c-mach{background:#fef3c7;color:#92400e;} .c-lube{background:#f3e8ff;color:#7e22ce;}
+  .c-rescue{background:#fee2e2;color:#991b1b;} .c-sms{background:#e0f2fe;color:#0369a1;}
+  .c-asset{background:#f0fdf4;color:#166534;} .c-civil{background:#fff7ed;color:#9a3412;}
+  .c-elec{background:#fef9c3;color:#854d0e;} .c-zip{background:#ede9fe;color:#5b21b6;}
+  .c-snow{background:#e0f2fe;color:#0c4a6e;} .c-swing{background:#ccfbf1;color:#134e4a;}
 
-  .fg { display:flex;flex-direction:column;gap:5px; }
-  .fg label { font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px; }
-  .fg input,.fg select,.fg textarea { padding:8px 11px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;transition:border .15s; }
-  .fg input:focus,.fg select:focus,.fg textarea:focus { border-color:var(--accent-light);box-shadow:0 0 0 2px rgba(71,85,105,.12); }
-  .fgrid { display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px; }
-  .frow { grid-column:1/-1; }
+  .qty-zero{color:var(--red);font-weight:700;} .qty-low{color:var(--amber);font-weight:600;} .qty-ok{color:var(--green);}
 
-  .btn { display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;border:none;transition:all .15s; }
-  .btn-primary { background:var(--accent);color:#fff; } .btn-primary:hover { background:var(--accent-hover); }
-  .btn-secondary { background:var(--bg);color:var(--text);border:1px solid var(--border); } .btn-secondary:hover { background:#e2e8f0; }
-  .btn-success { background:var(--success);color:#fff; } .btn-success:hover { background:#15803d; }
-  .btn-warning { background:var(--warning);color:#fff; }
-  .btn-danger { background:var(--danger);color:#fff; }
-  .btn-sm { padding:4px 10px;font-size:12px; }
-  .btn-row { display:flex;gap:10px;flex-wrap:wrap;margin-top:16px; }
+  /* FILTERS */
+  .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
+  .filter-bar input,.filter-bar select{padding:7px 11px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);background:var(--card);color:var(--text);outline:none;}
+  .filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent-light);box-shadow:0 0 0 2px rgba(71,85,105,.12);}
+  .filter-bar input{flex:1;min-width:200px;}
 
-  .tab-bar { display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;border-bottom:2px solid var(--border);padding-bottom:0; }
-  .tab-btn { padding:8px 14px;font-size:13px;font-family:var(--font);background:none;border:none;cursor:pointer;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;font-weight:500;transition:all .15s; }
-  .tab-btn:hover { color:var(--text); }
-  .tab-btn.active { color:var(--accent);border-bottom-color:var(--accent);font-weight:700; }
+  /* FORMS */
+  .fg{display:flex;flex-direction:column;gap:5px;}
+  .fg label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+  .fg input,.fg select,.fg textarea{padding:8px 11px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;transition:border .15s;}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent-light);box-shadow:0 0 0 2px rgba(71,85,105,.12);}
+  .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;}
+  .frow{grid-column:1/-1;}
 
-  .alert { padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px; }
-  .alert-info { background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af; }
-  .alert-success { background:#f0fdf4;border:1px solid #bbf7d0;color:#166534; }
-  .alert-warning { background:#fffbeb;border:1px solid #fde68a;color:#92400e; }
-  .alert-danger { background:#fef2f2;border:1px solid #fecaca;color:#991b1b; }
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;border:none;transition:all .15s;}
+  .btn-primary{background:var(--accent);color:#fff;} .btn-primary:hover{background:var(--accent-hover);}
+  .btn-secondary{background:var(--bg);color:var(--text);border:1px solid var(--border);} .btn-secondary:hover{background:#e2e8f0;}
+  .btn-success{background:var(--green);color:#fff;} .btn-success:hover{background:#15803d;}
+  .btn-warning{background:var(--amber);color:#fff;}
+  .btn-sm{padding:4px 10px;font-size:12px;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
 
-  .txn-row { display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px; }
-  .txn-row:last-child { border-bottom:none; }
-  .txn-type { font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap; }
-  .tt-in { background:#dcfce7;color:#15803d; } .tt-out { background:#fee2e2;color:#991b1b; }
-  .tt-adj { background:#fef3c7;color:#92400e; } .tt-chk { background:#dbeafe;color:#1d4ed8; }
-  .txn-info { flex:1; }
-  .txn-name { font-weight:500; }
-  .txn-meta { font-size:11px;color:var(--text-muted);margin-top:1px; }
-  .txn-qty { font-weight:700;white-space:nowrap; }
-  .txn-qty.pos { color:var(--success); } .txn-qty.neg { color:var(--danger); }
-  .txn-date { font-size:11px;color:var(--text-muted);white-space:nowrap; }
+  /* ALERTS */
+  .alert{padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px;}
+  .alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;}
+  .alert-warning{background:#fffbeb;border:1px solid #fde68a;color:#92400e;}
 
-  .modal-bg { display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px; }
-  .modal-bg.open { display:flex; }
-  .modal { background:#fff;border-radius:10px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25); }
-  .modal-header { padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
-  .modal-header h3 { font-size:16px;font-weight:700; }
-  .modal-close { background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);line-height:1; }
-  .modal-body { padding:20px; }
-  .modal-footer { padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end; }
+  /* TXN LOG */
+  .txn-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;}
+  .txn-row:last-child{border-bottom:none;}
+  .txn-type{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+  .tt-in{background:#dcfce7;color:#15803d;} .tt-out{background:#fee2e2;color:#991b1b;}
+  .tt-adj{background:#fef3c7;color:#92400e;} .tt-chk{background:#dbeafe;color:#1d4ed8;}
+  .txn-info{flex:1;} .txn-name{font-weight:500;} .txn-meta{font-size:11px;color:var(--muted);margin-top:1px;}
+  .txn-qty{font-weight:700;white-space:nowrap;} .txn-qty.pos{color:var(--green);} .txn-qty.neg{color:var(--red);}
+  .txn-date{font-size:11px;color:var(--muted);white-space:nowrap;}
 
-  .check-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px; }
-  .check-item { background:var(--card);border:1px solid var(--border);border-radius:7px;padding:12px;display:flex;align-items:center;gap:10px; }
-  .check-item.checked { border-color:#86efac;background:#f0fdf4; }
-  .ci-name { font-weight:500;font-size:13px;flex:1; }
-  .ci-cur { font-size:12px;color:var(--text-muted); }
-  .check-item input[type=number] { width:72px;padding:5px 7px;border:1px solid var(--border);border-radius:5px;font-size:13px;text-align:center;outline:none; }
-  .check-item input[type=number]:focus { border-color:var(--accent-light); }
+  /* MONTHLY CHECK */
+  .check-store-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:20px;}
+  .check-store-card{background:var(--card);border:2px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:all .15s;}
+  .check-store-card:hover{border-color:var(--accent-light);}
+  .check-store-card.selected{border-color:var(--accent);background:#f1f5f9;}
+  .check-store-card.finalized{border-color:var(--green);background:#f0fdf4;}
+  .csc-name{font-weight:700;font-size:14px;margin-bottom:4px;}
+  .csc-status{font-size:12px;color:var(--muted);}
+  .progress-bar{background:#e2e8f0;border-radius:4px;height:6px;overflow:hidden;margin-top:6px;}
+  .progress-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .3s;}
 
-  .progress-bar { background:#e2e8f0;border-radius:4px;height:8px;overflow:hidden;margin-top:6px; }
-  .progress-fill { height:100%;background:var(--accent);border-radius:4px;transition:width .3s; }
+  .check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+  .check-item{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:12px;display:flex;align-items:center;gap:10px;}
+  .check-item.checked{border-color:#86efac;background:#f0fdf4;}
+  .ci-name{font-weight:500;font-size:13px;flex:1;}
+  .ci-cur{font-size:12px;color:var(--muted);}
+  .check-item input[type=number]{width:72px;padding:5px 7px;border:1px solid var(--border);border-radius:5px;font-size:13px;text-align:center;outline:none;}
+  .check-item input[type=number]:focus{border-color:var(--accent-light);}
 
-  .pin-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center; }
-  .pin-overlay.open { display:flex; }
-  .pin-box { background:#fff;border-radius:12px;padding:32px;width:300px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3); }
-  .pin-box h3 { font-size:16px;font-weight:700;margin-bottom:6px; }
-  .pin-box p { font-size:13px;color:var(--text-muted);margin-bottom:20px; }
-  .pin-input { width:100%;text-align:center;font-size:28px;letter-spacing:8px;padding:12px;border:2px solid var(--border);border-radius:8px;outline:none;font-family:monospace; }
-  .pin-input:focus { border-color:var(--accent); }
-  .pin-error { color:var(--danger);font-size:12px;margin-top:8px;display:none; }
+  /* MODALS */
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px;}
+  .modal-bg.open{display:flex;}
+  .modal{background:#fff;border-radius:10px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+  .modal-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-header h3{font-size:16px;font-weight:700;}
+  .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;}
+  .modal-body{padding:20px;} .modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
 
-  .spinner { display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  .loading-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:400;align-items:center;justify-content:center; }
-  .loading-overlay.open { display:flex; }
-  .loading-box { background:#fff;border-radius:10px;padding:24px 32px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.2); }
-  .loading-box .spin2 { width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px; }
+  /* PIN */
+  .pin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;}
+  .pin-overlay.open{display:flex;}
+  .pin-box{background:#fff;border-radius:12px;padding:32px;width:300px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .pin-box h3{font-size:16px;font-weight:700;margin-bottom:6px;}
+  .pin-box p{font-size:13px;color:var(--muted);margin-bottom:20px;}
+  .pin-input{width:100%;text-align:center;font-size:28px;letter-spacing:8px;padding:12px;border:2px solid var(--border);border-radius:8px;outline:none;font-family:monospace;}
+  .pin-input:focus{border-color:var(--accent);}
+  .pin-error{color:var(--red);font-size:12px;margin-top:8px;display:none;}
 
-  .report-header { background:linear-gradient(135deg,#1e293b 0%,#475569 100%);color:#fff;padding:24px;border-radius:8px;margin-bottom:20px; }
-  .report-header h2 { font-size:20px;margin-bottom:4px; }
-  .report-section { margin-bottom:24px; }
-  .report-section h3 { font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:10px;border-bottom:2px solid var(--border);padding-bottom:6px; }
+  /* LOADING */
+  .loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:400;align-items:center;justify-content:center;}
+  .loading-overlay.open{display:flex;}
+  .loading-box{background:#fff;border-radius:10px;padding:24px 32px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.2);}
+  .spin{width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
 
-  .section-title { font-size:18px;font-weight:700;margin-bottom:4px; }
-  .section-sub { font-size:13px;color:var(--text-muted);margin-bottom:20px; }
-  .empty { text-align:center;padding:32px 20px;color:var(--text-muted); }
+  /* REPORT */
+  .report-header{background:linear-gradient(135deg,#1e293b 0%,#475569 100%);color:#fff;padding:24px;border-radius:8px;margin-bottom:20px;}
+  .report-header h2{font-size:20px;margin-bottom:4px;}
+  .report-section{margin-bottom:24px;}
+  .report-section h3{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:10px;border-bottom:2px solid var(--border);padding-bottom:6px;}
 
-  mark { background:#fef08a;padding:1px 2px;border-radius:2px; }
+  .section-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+  .section-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+  .empty{text-align:center;padding:32px 20px;color:var(--muted);}
+  mark{background:#fef08a;padding:1px 2px;border-radius:2px;}
 
-  @media print {
-    nav, .filter-bar, .btn-row, #reportControls { display: none !important; }
-    .page { display: block !important; }
-    #page-dashboard, #page-stock, #page-transactions, #page-monthly { display: none !important; }
-    #page-report { display: block !important; }
-    .main { padding: 0; max-width: none; }
+  @media print{
+    nav,.filter-bar,.btn-row,#reportControls{display:none!important;}
+    .page{display:block!important;}
+    #page-dashboard,#page-stock,#page-transactions,#page-monthly{display:none!important;}
+    #page-report{display:block!important;}
+    .main{padding:0;max-width:none;}
   }
 </style>
 </head>
 <body>
 
-<!-- LOADING OVERLAY -->
+<!-- LOADING -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-box">
-    <div class="spin2"></div>
-    <div id="loadingMsg" style="font-size:14px;color:var(--text-muted);">Loading...</div>
+    <div class="spin"></div>
+    <div id="loadingMsg" style="font-size:14px;color:var(--muted);">Loading...</div>
   </div>
 </div>
 
-<!-- PIN OVERLAY -->
+<!-- PIN -->
 <div class="pin-overlay" id="pinOverlay">
   <div class="pin-box">
     <h3>Admin Access</h3>
@@ -182,17 +204,21 @@
 
 <!-- NAV -->
 <nav>
-  <div class="logo">MJSR Store Portal <span>v3.0</span></div>
-  <button class="active" onclick="showPage('dashboard')">Dashboard</button>
-  <button onclick="showPage('stock')">Stock View</button>
-  <button onclick="showPage('transactions')">Transactions</button>
-  <button onclick="showPage('monthly')">Monthly Check</button>
-  <button onclick="showPage('report')">Report</button>
-  <div class="spacer"></div>
-  <div style="display:flex;gap:2px;background:rgba(0,0,0,.15);border-radius:6px;padding:3px;">
-    <button class="store-sel active" id="ss-chairlift" onclick="setStore('chairlift')">Chairlift</button>
-    <button class="store-sel" id="ss-civil" onclick="setStore('civil')">Civil</button>
-    <button class="store-sel" id="ss-pistenbully" onclick="setStore('pistenbully')">PistenBully</button>
+  <div class="nav-logo">MJSR Stores <span>v4.0</span></div>
+  <button class="nav-page active" onclick="showPage('dashboard')">Dashboard</button>
+  <button class="nav-page" onclick="showPage('stock')">Stock View</button>
+  <button class="nav-page" onclick="showPage('transactions')">Transactions</button>
+  <button class="nav-page" onclick="showPage('monthly')">Monthly Check</button>
+  <button class="nav-page" onclick="showPage('report')">Report</button>
+  <div class="nav-spacer"></div>
+  <div class="store-bar">
+    <button class="store-btn active" data-store="chairlift"  onclick="setStore('chairlift')">Chairlift</button>
+    <button class="store-btn"        data-store="civil"       onclick="setStore('civil')">Civil</button>
+    <button class="store-btn"        data-store="pistenbully" onclick="setStore('pistenbully')">PistenBully</button>
+    <button class="store-btn"        data-store="electrical"  onclick="setStore('electrical')">Electrical</button>
+    <button class="store-btn"        data-store="zipline"     onclick="setStore('zipline')">Zipline</button>
+    <button class="store-btn"        data-store="giantswing"  onclick="setStore('giantswing')">Giant Swing</button>
+    <button class="store-btn"        data-store="snowmaking"  onclick="setStore('snowmaking')">Snowmaking</button>
   </div>
 </nav>
 
@@ -200,8 +226,8 @@
 
   <!-- DASHBOARD -->
   <div class="page active" id="page-dashboard">
-    <div class="section-title">Store Dashboard</div>
-    <div class="section-sub" id="dashSub">Store overview</div>
+    <div class="section-title" id="dashTitle">Store Dashboard</div>
+    <div class="section-sub" id="dashSub"></div>
     <div class="stat-grid" id="statGrid"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div class="card">
@@ -221,8 +247,8 @@
 
   <!-- STOCK VIEW -->
   <div class="page" id="page-stock">
-    <div class="section-title">Stock Inventory</div>
-    <div class="section-sub" id="stockSub">View and manage current stock</div>
+    <div class="section-title" id="stockTitle">Stock Inventory</div>
+    <div class="section-sub" id="stockSub"></div>
     <div class="filter-bar">
       <input type="text" id="stockSearch" placeholder="Search items..." oninput="renderStockTable()">
       <select id="stockCatF" onchange="renderStockTable()"><option value="">All Categories</option></select>
@@ -254,7 +280,7 @@
   <!-- TRANSACTIONS -->
   <div class="page" id="page-transactions">
     <div class="section-title">Transaction Log</div>
-    <div class="section-sub">Record all stock movements</div>
+    <div class="section-sub">Record all stock movements across all stores</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div class="card">
         <div class="card-title">New Transaction</div>
@@ -273,6 +299,10 @@
               <option value="chairlift">Chairlift Store</option>
               <option value="civil">Civil Store</option>
               <option value="pistenbully">PistenBully Store</option>
+              <option value="electrical">Electrical Store</option>
+              <option value="zipline">Zipline Store</option>
+              <option value="giantswing">Giant Swing Store</option>
+              <option value="snowmaking">Snowmaking Store</option>
             </select>
           </div>
           <div class="fg frow" style="position:relative;">
@@ -294,13 +324,23 @@
         <div class="card-title">History <span class="badge" id="txnCountBadge">0</span></div>
         <div class="filter-bar" style="margin-bottom:10px;">
           <select id="txnFType" onchange="renderTxnLog()" style="flex:0 0 auto;">
-            <option value="">All</option><option value="in">In</option>
+            <option value="">All Types</option><option value="in">In</option>
             <option value="out">Out</option><option value="adj">Adj</option><option value="chk">Check</option>
+          </select>
+          <select id="txnFStore" onchange="renderTxnLog()" style="flex:0 0 auto;">
+            <option value="">All Stores</option>
+            <option value="chairlift">Chairlift</option>
+            <option value="civil">Civil</option>
+            <option value="pistenbully">PistenBully</option>
+            <option value="electrical">Electrical</option>
+            <option value="zipline">Zipline</option>
+            <option value="giantswing">Giant Swing</option>
+            <option value="snowmaking">Snowmaking</option>
           </select>
           <input type="text" id="txnFSearch" placeholder="Search..." oninput="renderTxnLog()">
           <button class="btn btn-secondary btn-sm" onclick="loadTransactions(true)">Refresh</button>
         </div>
-        <div id="txnLog" style="max-height:360px;overflow-y:auto;"></div>
+        <div id="txnLog" style="max-height:400px;overflow-y:auto;"></div>
       </div>
     </div>
   </div>
@@ -308,49 +348,61 @@
   <!-- MONTHLY CHECK -->
   <div class="page" id="page-monthly">
     <div class="section-title">Monthly Stock Check</div>
-    <div class="section-sub">Complete a full physical count to unlock the monthly report</div>
-    <div class="card" id="checkStatusCard">
-      <div class="card-title">Check Status</div>
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-        <div>
-          <div style="font-size:12px;color:var(--text-muted);margin-bottom:2px;">Period</div>
-          <div style="font-size:18px;font-weight:700;" id="checkPeriodLabel">--</div>
+    <div class="section-sub">Each store is checked and finalized independently</div>
+
+    <!-- Store overview cards -->
+    <div class="check-store-grid" id="checkStoreGrid"></div>
+
+    <!-- Active check entry -->
+    <div id="checkWorkArea" style="display:none;">
+      <div class="card">
+        <div class="card-title">
+          <span id="checkWorkTitle"></span>
+          <span class="badge" id="checkWorkPeriod"></span>
         </div>
-        <div style="flex:1;min-width:200px;">
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
-            <span>Progress</span><span id="checkProgressLabel">--</span>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
+          <div style="flex:1;min-width:200px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span>Progress</span><span id="checkProgressLabel">--</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+          <div id="checkStatusBadge"></div>
+          <button class="btn btn-success" id="finalizeBtn" style="display:none;" onclick="requirePIN('Finalize Check',doFinalizeCheck)">Finalize Check</button>
+          <button class="btn btn-secondary btn-sm" onclick="closeCheckWork()">Close</button>
         </div>
-        <div id="checkStatusBadge"></div>
-        <div class="btn-row" style="margin-top:0;">
-          <button class="btn btn-primary" onclick="startCheck()">Start / Resume Check</button>
-          <button class="btn btn-success" id="finalizeBtn" style="display:none;" onclick="requirePIN('Finalize Monthly Check',doFinalizeCheck)">Finalize Check</button>
-          <button class="btn btn-secondary btn-sm" onclick="requirePIN('Reset Check',doResetCheck)">Reset</button>
+        <div class="filter-bar" style="margin-bottom:14px;">
+          <select id="checkCatF" onchange="renderCheckGrid()"><option value="">All Categories</option></select>
+          <input type="text" id="checkSearchF" placeholder="Search item..." oninput="renderCheckGrid()">
+          <button class="btn btn-primary btn-sm" onclick="saveCheckProgress()">Save Progress</button>
         </div>
+        <div class="check-grid" id="checkGrid"></div>
       </div>
-    </div>
-    <div class="card" id="checkFilterCard" style="display:none;">
-      <div class="card-title">Filter Count View</div>
-      <div class="filter-bar" style="margin-bottom:0;">
-        <select id="checkCatF" onchange="renderCheckGrid()"><option value="">All Categories</option></select>
-        <input type="text" id="checkSearch" placeholder="Search item..." oninput="renderCheckGrid()">
-        <button class="btn btn-primary btn-sm" onclick="saveCheckProgress()">Save Progress</button>
-      </div>
-    </div>
-    <div id="checkGridWrap" style="display:none;">
-      <div class="card-title" id="checkGridTitle" style="margin-bottom:10px;font-size:15px;font-weight:700;padding:0 4px;"></div>
-      <div class="check-grid" id="checkGrid"></div>
     </div>
   </div>
 
   <!-- REPORT -->
   <div class="page" id="page-report">
     <div class="section-title">Monthly Report</div>
-    <div class="section-sub">Available after a finalized monthly stock check</div>
-    <div id="reportLocked" class="alert alert-warning">
+    <div class="section-sub">Select a store with a finalized check to generate its report</div>
+
+    <!-- Store selector for report -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Select Store</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" id="rpt-chairlift"  onclick="loadReport('chairlift')">Chairlift</button>
+        <button class="btn btn-secondary btn-sm" id="rpt-civil"       onclick="loadReport('civil')">Civil</button>
+        <button class="btn btn-secondary btn-sm" id="rpt-pistenbully" onclick="loadReport('pistenbully')">PistenBully</button>
+        <button class="btn btn-secondary btn-sm" id="rpt-electrical"  onclick="loadReport('electrical')">Electrical</button>
+        <button class="btn btn-secondary btn-sm" id="rpt-zipline"     onclick="loadReport('zipline')">Zipline</button>
+        <button class="btn btn-secondary btn-sm" id="rpt-giantswing"  onclick="loadReport('giantswing')">Giant Swing</button>
+        <button class="btn btn-secondary btn-sm" id="rpt-snowmaking"  onclick="loadReport('snowmaking')">Snowmaking</button>
+      </div>
+    </div>
+
+    <div id="reportLocked" class="alert alert-warning" style="display:none;">
       <span>⚠</span>
-      <div>Report is locked. Complete and finalize a monthly stock check first.</div>
+      <div id="reportLockedMsg">Select a store above to view its report.</div>
     </div>
     <div id="reportContent" style="display:none;">
       <div id="reportControls" class="btn-row" style="margin-bottom:16px;">
@@ -374,7 +426,15 @@
     <div class="modal-body">
       <div class="fgrid">
         <div class="fg"><label>Store</label>
-          <select id="addStore"><option value="chairlift">Chairlift Store</option><option value="civil">Civil Store</option></select>
+          <select id="addStore" onchange="refreshAddCats()">
+            <option value="chairlift">Chairlift Store</option>
+            <option value="civil">Civil Store</option>
+            <option value="pistenbully">PistenBully Store</option>
+            <option value="electrical">Electrical Store</option>
+            <option value="zipline">Zipline Store</option>
+            <option value="giantswing">Giant Swing Store</option>
+            <option value="snowmaking">Snowmaking Store</option>
+          </select>
         </div>
         <div class="fg"><label>Category</label><select id="addCat"></select></div>
         <div class="fg frow"><label>Item Name</label><input type="text" id="addName" placeholder="Item name"></div>
@@ -387,7 +447,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('addItemModal')">Cancel</button>
-      <button class="btn btn-primary" id="addItemSaveBtn" onclick="saveNewItem()">Save Item</button>
+      <button class="btn btn-primary" onclick="saveNewItem()">Save Item</button>
     </div>
   </div>
 </div>
@@ -413,30 +473,52 @@
 
 <script>
 // ============================================================
-// CONFIG - Set your deployed Apps Script URL here
+// CONFIG
 // ============================================================
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2JmvXXOluxC-1unKKJ-twTV1_2RBTugcMaAahOyNYrq7GQnzo_4WE5O6xqksYfO3RuA/exec';
 
-// ============================================================
-// CATEGORIES
-// ============================================================
-const CATS_CHAIRLIFT = ['Spare Parts','Tools','Machine Tools','Lubricants & Consumables','Rescue','SMS Jackets','Fixed Assets'];
-const CATS_CIVIL = ['Welding & Fabrication','Abrasives & Discs','Paints & Finishes','Timber & Civil','Fixings & Fasteners','Consumables & Sealants'];
-const CATS_PISTENBULLY = ['Wheels & Tracks','Axels','Sprocket Drive','Engine','Tools & Spares'];
+const ALL_STORES = ['chairlift','civil','pistenbully','electrical','zipline','giantswing','snowmaking'];
+
+const STORE_NAMES = {
+  chairlift:   'Chairlift Store',
+  civil:       'Civil Store',
+  pistenbully: 'PistenBully Store',
+  electrical:  'Electrical Store',
+  zipline:     'Zipline Store',
+  giantswing:  'Giant Swing Store',
+  snowmaking:  'Snowmaking Store'
+};
+
+const STORE_CATS = {
+  chairlift:   ['Spare Parts','Tools','Machine Tools','Lubricants & Consumables','Rescue','SMS Jackets','Fixed Assets'],
+  civil:       ['Welding & Fabrication','Abrasives & Discs','Paints & Finishes','Timber & Civil','Fixings & Fasteners','Consumables & Sealants'],
+  pistenbully: ['Wheels & Tracks','Axels','Sprocket Drive','Engine','Tools & Spares'],
+  electrical:  ['Tools & Equipment','MCBs & Distribution','Cables & Wiring','Lighting','Switches & Sockets','Conduit & Trunking','Meters & Controls','PC Rooms Electrical'],
+  zipline:     ['Ropes & Cables','Trolleys & Pulleys','Harnesses & PPE','Carabiners & Hardware','Braking Systems','Tools & Consumables'],
+  giantswing:  ['Giant Swing','Sling Shot','Accessories & Tools'],
+  snowmaking:  ['Fan Guns & Nozzles','Pipes & Fittings','Electrical & Controls','Lubricants & Antifreeze','PPE & Cold Weather Gear','Tools & Consumables']
+};
 
 // ============================================================
 // STATE
 // ============================================================
 const S = {
   store: 'chairlift',
-  page: 'dashboard',
-  stock: { chairlift: [], civil: [], pistenbully: [] },
+  page:  'dashboard',
+  stock: { chairlift:[], civil:[], pistenbully:[], electrical:[], zipline:[], giantswing:[], snowmaking:[] },
   transactions: [],
-  checkStatus: 'none',
-  checkPeriod: '',
-  checkFinalized: false,
-  checkFinalizedDate: '',
-  checkCounts: {},      // local unsaved counts: { itemId: qty }
+  // Per-store check state — keyed by store
+  checkState: {
+    chairlift:   { status:'none', period:'', finalized:false, finalizedDate:'', counts:{} },
+    civil:       { status:'none', period:'', finalized:false, finalizedDate:'', counts:{} },
+    pistenbully: { status:'none', period:'', finalized:false, finalizedDate:'', counts:{} },
+    electrical:  { status:'none', period:'', finalized:false, finalizedDate:'', counts:{} },
+    zipline:     { status:'none', period:'', finalized:false, finalizedDate:'', counts:{} },
+    giantswing:  { status:'none', period:'', finalized:false, finalizedDate:'', counts:{} },
+    snowmaking:  { status:'none', period:'', finalized:false, finalizedDate:'', counts:{} }
+  },
+  activeCheckStore: null,  // which store is open in the check work area
+  reportStore: null,
   pinCb: null
 };
 
@@ -444,14 +526,12 @@ const S = {
 // API
 // ============================================================
 async function api(payload) {
-  const resp = await fetch(SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(payload)
+  const r = await fetch(SCRIPT_URL, {
+    method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(payload)
   });
-  const data = await resp.json();
-  if (!data.success) throw new Error(data.error || 'Unknown error');
-  return data;
+  const d = await r.json();
+  if (!d.success) throw new Error(d.error || 'Unknown error');
+  return d;
 }
 
 function loading(show, msg) {
@@ -465,32 +545,31 @@ function loading(show, msg) {
 async function init() {
   loading(true, 'Initialising portal...');
   try {
-    const r = await api({ action: 'init' });
-    S.checkStatus = r.checkStatus || 'none';
-    S.checkPeriod = r.checkPeriod || '';
-    S.checkFinalized = r.checkFinalized || false;
-    S.checkFinalizedDate = r.checkFinalizedDate || '';
+    const r = await api({ action:'init' });
+    // Merge per-store check states from server
+    if (r.storeStates) {
+      ALL_STORES.forEach(store => {
+        if (r.storeStates[store]) {
+          S.checkState[store].status        = r.storeStates[store].status || 'none';
+          S.checkState[store].period        = r.storeStates[store].period || '';
+          S.checkState[store].finalized     = r.storeStates[store].finalized || false;
+          S.checkState[store].finalizedDate = r.storeStates[store].finalizedDate || '';
+        }
+      });
+    }
     await loadStock(false);
     await loadTransactions(false);
     showPage('dashboard');
   } catch(e) {
-    alert('Init error: ' + e.message + '\n\nCheck SCRIPT_URL is set correctly.');
-  } finally {
-    loading(false);
-  }
+    alert('Init error: ' + e.message + '\n\nCheck SCRIPT_URL is correct.');
+  } finally { loading(false); }
 }
 
 async function loadStock(showLoader) {
   if (showLoader) loading(true, 'Loading stock...');
   try {
-    const [cl, cv, pb] = await Promise.all([
-      api({ action: 'getStock', store: 'chairlift' }),
-      api({ action: 'getStock', store: 'civil' }),
-      api({ action: 'getStock', store: 'pistenbully' })
-    ]);
-    S.stock.chairlift = cl.items;
-    S.stock.civil = cv.items;
-    S.stock.pistenbully = pb.items;
+    const results = await Promise.all(ALL_STORES.map(store => api({ action:'getStock', store })));
+    ALL_STORES.forEach((store, i) => { S.stock[store] = results[i].items; });
     refreshCurrentPage();
   } catch(e) { alert('Load stock error: ' + e.message); }
   finally { if (showLoader) loading(false); }
@@ -499,10 +578,10 @@ async function loadStock(showLoader) {
 async function loadTransactions(showLoader) {
   if (showLoader) loading(true, 'Loading transactions...');
   try {
-    const r = await api({ action: 'getTransactions', limit: 300 });
+    const r = await api({ action:'getTransactions', limit:300 });
     S.transactions = r.transactions;
     if (S.page === 'transactions') renderTxnLog();
-    if (S.page === 'dashboard') renderDashboard();
+    if (S.page === 'dashboard')    renderDashboard();
   } catch(e) { alert('Load transactions error: ' + e.message); }
   finally { if (showLoader) loading(false); }
 }
@@ -514,7 +593,7 @@ function showPage(page) {
   S.page = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('nav button:not(.store-sel)').forEach((b, i) => {
+  document.querySelectorAll('.nav-page').forEach((b, i) => {
     b.classList.toggle('active', ['dashboard','stock','transactions','monthly','report'][i] === page);
   });
   if (page === 'dashboard')    renderDashboard();
@@ -526,8 +605,8 @@ function showPage(page) {
 
 function setStore(store) {
   S.store = store;
-  document.querySelectorAll('.store-sel').forEach(b => b.classList.remove('active'));
-  document.getElementById('ss-' + store).classList.add('active');
+  document.querySelectorAll('.store-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.store-btn[data-store="${store}"]`).classList.add('active');
   showPage(S.page);
 }
 
@@ -537,46 +616,46 @@ function refreshCurrentPage() { showPage(S.page); }
 // DASHBOARD
 // ============================================================
 function renderDashboard() {
-  const items = S.stock[S.store];
-  const storeName = S.store === 'chairlift' ? 'Chairlift Store' : S.store === 'civil' ? 'Civil Store' : 'PistenBully Store';
-  document.getElementById('dashSub').textContent = storeName + ' overview';
+  const items     = S.stock[S.store];
+  const storeName = STORE_NAMES[S.store];
+  const cs        = S.checkState[S.store];
+  document.getElementById('dashTitle').textContent = storeName + ' — Dashboard';
+  document.getElementById('dashSub').textContent   = '';
 
-  const totalValue = items.reduce((s,i) => s + i.qty * i.price, 0);
-  const zeroCount = items.filter(i => i.qty === 0).length;
-  const cats = [...new Set(items.map(i => i.cat))];
-  const storeTxns = S.transactions.filter(t => t.store === S.store);
+  const totalValue = items.reduce((s,i) => s + i.qty*i.price, 0);
+  const zeroCount  = items.filter(i => i.qty === 0).length;
+  const cats       = [...new Set(items.map(i => i.cat))];
+  const storeTxns  = S.transactions.filter(t => t.store === S.store);
+  const checkStr   = cs.finalized ? 'Finalized: '+cs.period : cs.status==='active' ? 'In Progress: '+cs.period : 'Not Started';
 
   document.getElementById('statGrid').innerHTML = `
     <div class="stat"><div class="lbl">Total Items</div><div class="val">${items.length}</div><div class="sub">${storeName}</div></div>
     <div class="stat"><div class="lbl">Stock Value</div><div class="val">${fmtPKR(totalValue)}</div><div class="sub">PKR (priced items)</div></div>
-    <div class="stat"><div class="lbl">Zero Stock</div><div class="val" style="color:${zeroCount>0?'var(--danger)':'var(--success)'}">${zeroCount}</div><div class="sub">Require replenishment</div></div>
+    <div class="stat"><div class="lbl">Zero Stock</div><div class="val" style="color:${zeroCount>0?'var(--red)':'var(--green)'}">${zeroCount}</div><div class="sub">Require replenishment</div></div>
     <div class="stat"><div class="lbl">Categories</div><div class="val">${cats.length}</div></div>
-    <div class="stat"><div class="lbl">Monthly Check</div><div class="val" style="font-size:15px;padding-top:5px;">${S.checkFinalized?'Finalized':S.checkStatus==='active'?'In Progress':'Not Started'}</div><div class="sub">${S.checkPeriod||'--'}</div></div>
-    <div class="stat"><div class="lbl">Transactions</div><div class="val">${storeTxns.length}</div><div class="sub">All time this store</div></div>
+    <div class="stat"><div class="lbl">Monthly Check</div><div class="val" style="font-size:14px;padding-top:5px;">${cs.finalized?'Finalized':cs.status==='active'?'In Progress':'Not Started'}</div><div class="sub">${cs.period||'--'}</div></div>
+    <div class="stat"><div class="lbl">Transactions</div><div class="val">${storeTxns.length}</div><div class="sub">All time</div></div>
   `;
 
-  // Category breakdown
   const catMap = {};
   items.forEach(i => { catMap[i.cat] = (catMap[i.cat]||0)+1; });
   document.getElementById('catCountBadge').textContent = cats.length + ' categories';
   document.getElementById('catBreakdown').innerHTML = Object.entries(catMap).map(([c,n]) =>
     `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;">
-       <span class="cat-badge ${catClass(c)}">${c}</span>
-       <span style="font-weight:600;font-size:13px;">${n} items</span>
-     </div>`).join('') || '<div class="empty">No items</div>';
+      <span class="cb ${catClass(c)}">${c}</span>
+      <span style="font-weight:600;font-size:13px;">${n} items</span>
+    </div>`).join('') || '<div class="empty">No items yet</div>';
 
-  // Recent transactions
   const recent = storeTxns.slice(0, 15);
   document.getElementById('recentTxns').innerHTML = recent.length
     ? recent.map(txnRowHtml).join('')
-    : '<div class="empty" style="padding:20px">No transactions yet</div>';
+    : '<div class="empty" style="padding:20px;">No transactions yet</div>';
 
-  // Low stock alerts
   const low = items.filter(i => i.qty <= 3);
   document.getElementById('lowStockList').innerHTML = low.length === 0
     ? '<div class="alert alert-success"><span>✅</span><div>No critical low-stock items.</div></div>'
     : `<div class="tbl-wrap"><table><thead><tr><th>Item</th><th>Category</th><th style="text-align:right">Qty</th><th>Unit</th></tr></thead><tbody>${
-        low.map(i=>`<tr><td class="iname">${i.name}</td><td><span class="cat-badge ${catClass(i.cat)}">${i.cat}</span></td><td class="num ${i.qty===0?'qty-zero':'qty-low'}">${i.qty}</td><td>${i.unit}</td></tr>`).join('')
+        low.map(i=>`<tr><td class="iname">${i.name}</td><td><span class="cb ${catClass(i.cat)}">${i.cat}</span></td><td class="num ${i.qty===0?'qty-zero':'qty-low'}">${i.qty}</td><td>${i.unit}</td></tr>`).join('')
       }</tbody></table></div>`;
 }
 
@@ -584,37 +663,35 @@ function renderDashboard() {
 // STOCK TABLE
 // ============================================================
 function renderStockPage() {
-  document.getElementById('stockSub').textContent = (S.store==='chairlift'?'Chairlift Store':'Civil Store') + ' inventory';
-  const cats = [...new Set(S.stock[S.store].map(i=>i.cat))];
-  const sel = document.getElementById('stockCatF');
-  const cur = sel.value;
+  document.getElementById('stockTitle').textContent = STORE_NAMES[S.store] + ' — Inventory';
+  document.getElementById('stockSub').textContent   = '';
+  const cats = [...new Set(S.stock[S.store].map(i => i.cat))];
+  const sel  = document.getElementById('stockCatF');
+  const cur  = sel.value;
   sel.innerHTML = '<option value="">All Categories</option>' + cats.map(c=>`<option value="${c}"${c===cur?' selected':''}>${c}</option>`).join('');
-  // Also update add item cat list
-  const cats2 = S.store === 'pistenbully' ? CATS_PISTENBULLY : S.store === 'civil' ? CATS_CIVIL : CATS_CHAIRLIFT;
-  document.getElementById('addCat').innerHTML = cats2.map(c=>`<option value="${c}">${c}</option>`).join('');
   renderStockTable();
 }
 
 function renderStockTable() {
-  const q = document.getElementById('stockSearch').value.toLowerCase();
-  const cat = document.getElementById('stockCatF').value;
+  const q    = document.getElementById('stockSearch').value.toLowerCase();
+  const cat  = document.getElementById('stockCatF').value;
   const qtyF = document.getElementById('stockQtyF').value;
   const items = S.stock[S.store].filter(i => {
-    const ms = !q || i.name.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q) || i.id.toLowerCase().includes(q);
+    const ms = !q   || i.name.toLowerCase().includes(q)||i.desc.toLowerCase().includes(q)||i.id.toLowerCase().includes(q);
     const mc = !cat || i.cat === cat;
-    const mq = !qtyF || (qtyF==='zero'&&i.qty===0)||(qtyF==='low'&&i.qty>0&&i.qty<=5)||(qtyF==='ok'&&i.qty>5);
+    const mq = !qtyF||(qtyF==='zero'&&i.qty===0)||(qtyF==='low'&&i.qty>0&&i.qty<=5)||(qtyF==='ok'&&i.qty>5);
     return ms && mc && mq;
   });
   const tbody = document.getElementById('stockTbody');
-  if (!items.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty">No items match filters</td></tr>'; return; }
+  if (!items.length) { tbody.innerHTML='<tr><td colspan="9" class="empty">No items match filters</td></tr>'; return; }
   tbody.innerHTML = items.map((item, idx) => {
     const qc = item.qty===0?'qty-zero':item.qty<=5?'qty-low':'qty-ok';
     const tv = item.qty * item.price;
     return `<tr>
-      <td style="color:var(--text-muted);font-size:12px;">${idx+1}</td>
+      <td style="color:var(--muted);font-size:12px;">${idx+1}</td>
       <td class="iname">${hl(item.name,q)}</td>
       <td class="desc" title="${item.desc}">${hl(item.desc,q)}</td>
-      <td><span class="cat-badge ${catClass(item.cat)}">${item.cat}</span></td>
+      <td><span class="cb ${catClass(item.cat)}">${item.cat}</span></td>
       <td>${item.unit}</td>
       <td class="num ${qc}">${item.qty}</td>
       <td class="num">${item.price>0?fmtPKR(item.price):'-'}</td>
@@ -628,29 +705,25 @@ function renderStockTable() {
 // TRANSACTIONS
 // ============================================================
 function renderTransactionsPage() {
-  document.getElementById('txnDate').value = todayStr();
+  document.getElementById('txnDate').value  = todayStr();
   document.getElementById('txnStore').value = S.store;
   renderTxnLog();
 }
 
 let selectedItem = null;
-function clearItemSearch() {
-  selectedItem = null;
-  document.getElementById('txnItemSearch').value = '';
-  document.getElementById('suggBox').innerHTML = '';
-}
+function clearItemSearch() { selectedItem=null; document.getElementById('txnItemSearch').value=''; document.getElementById('suggBox').innerHTML=''; }
 
 function showSuggestions() {
-  const q = document.getElementById('txnItemSearch').value.toLowerCase();
+  const q     = document.getElementById('txnItemSearch').value.toLowerCase();
   const store = document.getElementById('txnStore').value;
-  const box = document.getElementById('suggBox');
+  const box   = document.getElementById('suggBox');
   if (!q) { box.innerHTML=''; return; }
   const matches = S.stock[store].filter(i=>i.name.toLowerCase().includes(q)||i.desc.toLowerCase().includes(q)).slice(0,8);
   if (!matches.length) { box.innerHTML=''; return; }
   box.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.1);max-height:220px;overflow-y:auto;">
     ${matches.map(i=>`<div onclick="pickItem('${i.id}')" style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:13px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
       <div style="font-weight:500;">${i.name}</div>
-      <div style="font-size:11px;color:var(--text-muted);">${i.cat} &bull; Current: <strong>${i.qty}</strong> ${i.unit}</div>
+      <div style="font-size:11px;color:var(--muted);">${i.cat} &bull; Current: <strong>${i.qty}</strong> ${i.unit}</div>
     </div>`).join('')}
   </div>`;
 }
@@ -664,33 +737,25 @@ function pickItem(id) {
 }
 
 async function submitTxn() {
-  const type = document.getElementById('txnType').value;
+  const type  = document.getElementById('txnType').value;
   const store = document.getElementById('txnStore').value;
-  const qty = parseFloat(document.getElementById('txnQty').value);
+  const qty   = parseFloat(document.getElementById('txnQty').value);
   const party = document.getElementById('txnParty').value.trim();
-  const ref = document.getElementById('txnRef').value.trim();
-  const date = document.getElementById('txnDate').value;
-
-  if (!selectedItem) { alert('Please select an item.'); return; }
+  const ref   = document.getElementById('txnRef').value.trim();
+  const date  = document.getElementById('txnDate').value;
+  if (!selectedItem)    { alert('Please select an item.'); return; }
   if (!qty || qty <= 0) { alert('Enter a valid quantity.'); return; }
-
   if (type==='out' && qty > selectedItem.qty) {
     if (!confirm(`Warning: Issuing ${qty} but only ${selectedItem.qty} in stock. Continue?`)) return;
   }
-
-  loading(true, 'Submitting transaction...');
+  loading(true, 'Submitting...');
   try {
     const r = await api({ action:'submitTransaction', store, type, itemId:selectedItem.id, qty, party, ref, date });
-    // Update local stock
     const item = S.stock[store].find(i=>i.id===selectedItem.id);
     if (item) item.qty = r.newQty;
-    // Add to local transactions
-    S.transactions.unshift({
-      id:'TXN-'+Date.now(), store, type,
+    S.transactions.unshift({ id:'TXN-'+Date.now(), store, type,
       itemId:selectedItem.id, itemName:selectedItem.name, cat:selectedItem.cat,
-      qty, prevQty:r.prevQty, newQty:r.newQty, party, ref, date,
-      timestamp:new Date().toISOString()
-    });
+      qty, prevQty:r.prevQty, newQty:r.newQty, party, ref, date, timestamp:new Date().toISOString() });
     clearTxnForm();
     renderTxnLog();
     alert(`Done. ${r.itemName}: ${r.prevQty} \u2192 ${r.newQty} ${selectedItem.unit}`);
@@ -699,7 +764,7 @@ async function submitTxn() {
 }
 
 function clearTxnForm() {
-  selectedItem = null;
+  selectedItem=null;
   document.getElementById('txnItemSearch').value='';
   document.getElementById('txnQty').value='';
   document.getElementById('txnParty').value='';
@@ -708,12 +773,14 @@ function clearTxnForm() {
 }
 
 function renderTxnLog() {
-  const tf = document.getElementById('txnFType').value;
-  const sf = document.getElementById('txnFSearch').value.toLowerCase();
-  const txns = S.transactions.filter(t=>{
+  const tf  = document.getElementById('txnFType').value;
+  const sf  = document.getElementById('txnFStore').value;
+  const q   = document.getElementById('txnFSearch').value.toLowerCase();
+  const txns = S.transactions.filter(t => {
     const mt = !tf || t.type===tf;
-    const ms = !sf || t.itemName.toLowerCase().includes(sf)||(t.party||'').toLowerCase().includes(sf);
-    return mt && ms;
+    const ms = !sf || t.store===sf;
+    const mq = !q  || t.itemName.toLowerCase().includes(q)||(t.party||'').toLowerCase().includes(q);
+    return mt && ms && mq;
   });
   document.getElementById('txnCountBadge').textContent = txns.length;
   document.getElementById('txnLog').innerHTML = txns.length ? txns.map(txnRowHtml).join('') : '<div class="empty" style="padding:20px;">No transactions</div>';
@@ -721,13 +788,14 @@ function renderTxnLog() {
 
 function txnRowHtml(t) {
   const signs = {out:'-',in:'+',adj:'\u00b1',chk:'\u2714'};
-  const sc = t.type==='out'?'neg':t.type==='in'?'pos':'';
-  const tc = {out:'tt-out',in:'tt-in',adj:'tt-adj',chk:'tt-chk'}[t.type]||'tt-adj';
+  const sc    = t.type==='out'?'neg':t.type==='in'?'pos':'';
+  const tc    = {out:'tt-out',in:'tt-in',adj:'tt-adj',chk:'tt-chk'}[t.type]||'tt-adj';
+  const sname = STORE_NAMES[t.store] || t.store;
   return `<div class="txn-row">
     <span class="txn-type ${tc}">${t.type.toUpperCase()}</span>
     <div class="txn-info">
       <div class="txn-name">${t.itemName}</div>
-      <div class="txn-meta">${t.cat||''}${t.party?' \u2022 '+t.party:''}${t.ref?' \u2022 '+t.ref:''}</div>
+      <div class="txn-meta">${sname} &bull; ${t.cat||''}${t.party?' &bull; '+t.party:''}${t.ref?' &bull; '+t.ref:''}</div>
     </div>
     <div class="txn-qty ${sc}">${signs[t.type]||''}${t.qty}</div>
     <div class="txn-date">${t.date||''}</div>
@@ -735,170 +803,187 @@ function txnRowHtml(t) {
 }
 
 // ============================================================
-// MONTHLY CHECK
+// MONTHLY CHECK — per-store independent
 // ============================================================
-async function loadCheckStatus() {
-  try {
-    const r = await api({ action:'getCheckStatus', period:S.checkPeriod });
-    S.checkStatus = r.status;
-    S.checkPeriod = r.period;
-    S.checkFinalized = r.finalized;
-    S.checkFinalizedDate = r.finalizedDate;
-    S.checkCounts = r.counts || {};
-  } catch(e) { console.error(e); }
+function renderMonthlyPage() {
+  // Render overview cards for all 7 stores
+  document.getElementById('checkStoreGrid').innerHTML = ALL_STORES.map(store => {
+    const cs    = S.checkState[store];
+    const items = S.stock[store];
+    const cnt   = Object.keys(cs.counts).length;
+    const pct   = items.length ? Math.round(cnt/items.length*100) : 0;
+    const isFinalized = cs.finalized;
+    const isActive    = cs.status === 'active';
+    return `<div class="check-store-card ${isFinalized?'finalized':''} ${S.activeCheckStore===store?'selected':''}" onclick="openCheckStore('${store}')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div class="csc-name">${STORE_NAMES[store]}</div>
+        ${isFinalized ? '<span style="font-size:18px;">✅</span>' : isActive ? '<span style="font-size:18px;">🔄</span>' : '<span style="font-size:18px;">⬜</span>'}
+      </div>
+      <div class="csc-status">${isFinalized ? 'Finalized: '+cs.period : isActive ? 'In Progress: '+cs.period : 'Not Started'}</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">${cnt} / ${items.length} items counted</div>
+    </div>`;
+  }).join('');
+
+  // If a store is active, show/refresh the work area
+  if (S.activeCheckStore) renderCheckWork();
 }
 
-function renderMonthlyPage() {
-  const now = new Date();
-  const defaultPeriod = now.toLocaleString('default',{month:'long',year:'numeric'});
-  document.getElementById('checkPeriodLabel').textContent = S.checkPeriod || defaultPeriod;
+async function openCheckStore(store) {
+  S.activeCheckStore = store;
+  const cs = S.checkState[store];
 
-  const items = S.stock[S.store];
-  const counted = Object.keys(S.checkCounts).length;
+  // Load existing counts from server if check is active or finalized
+  if (cs.status !== 'none') {
+    loading(true, 'Loading check data...');
+    try {
+      const r = await api({ action:'getCheckStatus', store, period:cs.period });
+      cs.counts = r.counts || {};
+    } catch(e) { cs.counts = {}; }
+    finally { loading(false); }
+  }
+
+  document.getElementById('checkWorkArea').style.display = '';
+  renderCheckWork();
+  renderMonthlyPage(); // refresh overview cards to show selected
+}
+
+function closeCheckWork() {
+  S.activeCheckStore = null;
+  document.getElementById('checkWorkArea').style.display = 'none';
+  renderMonthlyPage();
+}
+
+function renderCheckWork() {
+  const store = S.activeCheckStore;
+  if (!store) return;
+  const cs    = S.checkState[store];
+  const items = S.stock[store];
+
+  document.getElementById('checkWorkTitle').textContent = STORE_NAMES[store] + ' — Physical Count';
+  document.getElementById('checkWorkPeriod').textContent = cs.period || new Date().toLocaleString('default',{month:'long',year:'numeric'});
+
+  // Start check if not started
+  if (cs.status === 'none') {
+    cs.status = 'active';
+    cs.period = cs.period || new Date().toLocaleString('default',{month:'long',year:'numeric'});
+  }
+
+  const counted = Object.keys(cs.counts).length;
   document.getElementById('checkProgressLabel').textContent = `${counted} / ${items.length} items`;
-  const pct = items.length ? Math.round(counted/items.length*100) : 0;
-  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressFill').style.width = (items.length ? Math.round(counted/items.length*100) : 0) + '%';
 
   const badge = document.getElementById('checkStatusBadge');
-  if (S.checkFinalized) {
+  if (cs.finalized) {
     badge.innerHTML = '<span style="background:#dcfce7;color:#15803d;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:700;">Finalized</span>';
-  } else if (S.checkStatus==='active') {
+  } else if (cs.status === 'active') {
     badge.innerHTML = '<span style="background:#fef3c7;color:#92400e;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:700;">In Progress</span>';
   } else {
-    badge.innerHTML = '<span style="background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:12px;font-size:13px;font-weight:700;">Not Started</span>';
+    badge.innerHTML = '';
   }
 
   const allDone = counted >= items.length && items.length > 0;
-  document.getElementById('finalizeBtn').style.display = (allDone && !S.checkFinalized) ? '' : 'none';
+  document.getElementById('finalizeBtn').style.display = (allDone && !cs.finalized) ? '' : 'none';
 
-  if (S.checkStatus==='active') {
-    document.getElementById('checkFilterCard').style.display='';
-    document.getElementById('checkGridWrap').style.display='';
-    // Cat filter for check
-    const cats = [...new Set(items.map(i=>i.cat))];
-    const sel = document.getElementById('checkCatF');
-    const cur = sel.value;
-    sel.innerHTML = '<option value="">All Categories</option>' + cats.map(c=>`<option value="${c}"${c===cur?' selected':''}>${c}</option>`).join('');
-    renderCheckGrid();
-  } else {
-    document.getElementById('checkFilterCard').style.display='none';
-    document.getElementById('checkGridWrap').style.display='none';
-  }
+  // Category filter
+  const cats   = [...new Set(items.map(i => i.cat))];
+  const catSel = document.getElementById('checkCatF');
+  const curCat = catSel.value;
+  catSel.innerHTML = '<option value="">All Categories</option>' + cats.map(c=>`<option value="${c}"${c===curCat?' selected':''}>${c}</option>`).join('');
+
+  renderCheckGrid();
 }
 
 function renderCheckGrid() {
-  const cat = document.getElementById('checkCatF').value;
-  const q = document.getElementById('checkSearch').value.toLowerCase();
-  let items = S.stock[S.store].filter(i=>(!cat||i.cat===cat)&&(!q||i.name.toLowerCase().includes(q)));
-  const done = items.filter(i=>S.checkCounts[i.id]!==undefined).length;
-  document.getElementById('checkGridTitle').textContent = `Physical Count${cat?' - '+cat:''} (${done}/${items.length} counted)`;
+  const store = S.activeCheckStore;
+  if (!store) return;
+  const cs    = S.checkState[store];
+  const cat   = document.getElementById('checkCatF').value;
+  const q     = document.getElementById('checkSearchF').value.toLowerCase();
+  const items = S.stock[store].filter(i => (!cat||i.cat===cat) && (!q||i.name.toLowerCase().includes(q)));
+
   document.getElementById('checkGrid').innerHTML = items.map(item => {
-    const counted = S.checkCounts[item.id];
-    const isDone = counted !== undefined;
+    const counted = cs.counts[item.id];
+    const isDone  = counted !== undefined;
     return `<div class="check-item${isDone?' checked':''}" id="ci-${item.id}">
       <div style="flex:1;">
         <div class="ci-name">${item.name}</div>
         <div class="ci-cur">Book: ${item.qty} ${item.unit} | ${item.cat}</div>
       </div>
       <input type="number" min="0" step="0.01" placeholder="${item.qty}" value="${isDone?counted:''}"
-        onchange="updateCount('${item.id}',this.value)"
+        onchange="updateCount('${store}','${item.id}',this.value)"
         style="${isDone?'border-color:#86efac;background:#f0fdf4;':''}">
     </div>`;
   }).join('');
 }
 
-function updateCount(id, val) {
-  if (val===''||val===null) { delete S.checkCounts[id]; }
-  else { S.checkCounts[id] = parseFloat(val); }
+function updateCount(store, id, val) {
+  const cs = S.checkState[store];
+  if (val === '') { delete cs.counts[id]; }
+  else            { cs.counts[id] = parseFloat(val); }
   const el = document.getElementById('ci-'+id);
   if (el) {
-    el.classList.toggle('checked', val!=='');
+    el.classList.toggle('checked', val !== '');
     const inp = el.querySelector('input');
-    if (inp) { inp.style.borderColor=val!==''?'#86efac':''; inp.style.background=val!==''?'#f0fdf4':''; }
+    if (inp) { inp.style.borderColor=val?'#86efac':''; inp.style.background=val?'#f0fdf4':''; }
   }
-  const items = S.stock[S.store];
-  const counted = Object.keys(S.checkCounts).length;
+  const items   = S.stock[store];
+  const counted = Object.keys(cs.counts).length;
   document.getElementById('checkProgressLabel').textContent = `${counted} / ${items.length} items`;
   document.getElementById('progressFill').style.width = (items.length?Math.round(counted/items.length*100):0)+'%';
-  const allDone = counted >= items.length && items.length > 0;
-  document.getElementById('finalizeBtn').style.display = (allDone && !S.checkFinalized) ? '' : 'none';
-}
-
-function startCheck() {
-  if (S.checkFinalized) {
-    if (!confirm('A finalized check already exists. Start a new check? This will reset the previous check.')) return;
-    requirePIN('Reset Check', async () => {
-      await doResetCheck();
-      beginCheck();
-    });
-  } else {
-    beginCheck();
-  }
-}
-
-async function beginCheck() {
-  S.checkStatus = 'active';
-  if (!S.checkPeriod) {
-    S.checkPeriod = new Date().toLocaleString('default',{month:'long',year:'numeric'});
-  }
-  // Load existing counts from sheet
-  loading(true, 'Loading check status...');
-  try {
-    const r = await api({ action:'getCheckStatus', period:S.checkPeriod });
-    S.checkCounts = r.counts || {};
-  } catch(e) { S.checkCounts = {}; }
-  finally { loading(false); }
-  renderMonthlyPage();
+  document.getElementById('finalizeBtn').style.display = (counted>=items.length && items.length>0 && !cs.finalized) ? '' : 'none';
 }
 
 async function saveCheckProgress() {
-  if (Object.keys(S.checkCounts).length === 0) { alert('No counts to save yet.'); return; }
-  loading(true, 'Saving check progress...');
+  const store = S.activeCheckStore;
+  if (!store) return;
+  const cs = S.checkState[store];
+  if (Object.keys(cs.counts).length === 0) { alert('No counts entered yet.'); return; }
+  loading(true, 'Saving progress...');
   try {
-    await api({ action:'saveCheckCounts', store:S.store, period:S.checkPeriod, counts:S.checkCounts });
-    alert('Progress saved to Google Sheet.');
+    await api({ action:'saveCheckCounts', store, period:cs.period, counts:cs.counts });
+    alert('Progress saved.');
   } catch(e) { alert('Save error: '+e.message); }
   finally { loading(false); }
 }
 
 async function doFinalizeCheck() {
-  const items = S.stock[S.store];
-  const counted = Object.keys(S.checkCounts).length;
-  if (counted < items.length) {
-    if (!confirm(`Only ${counted} of ${items.length} items counted. Finalize anyway? Uncounted items will keep their current book quantity.`)) return;
+  const store = S.activeCheckStore;
+  if (!store) return;
+  const cs    = S.checkState[store];
+  const items = S.stock[store];
+  if (Object.keys(cs.counts).length < items.length) {
+    if (!confirm(`Only ${Object.keys(cs.counts).length} of ${items.length} items counted. Finalize anyway? Uncounted items keep their current book quantity.`)) return;
   }
-  // Save all counts first
   loading(true, 'Saving counts...');
   try {
-    await api({ action:'saveCheckCounts', store:S.store, period:S.checkPeriod, counts:S.checkCounts });
+    await api({ action:'saveCheckCounts', store, period:cs.period, counts:cs.counts });
   } catch(e) { loading(false); alert('Save error: '+e.message); return; }
 
-  loading(true, 'Finalizing check...');
+  loading(true, 'Finalizing...');
   try {
-    const r = await api({ action:'finalizeCheck', store:S.store, period:S.checkPeriod, pin:'1234' });
-    S.checkFinalized = true;
-    S.checkFinalizedDate = r.finalizedDate;
-    S.checkStatus = 'finalized';
-    // Reload stock to get updated quantities
+    const r = await api({ action:'finalizeCheck', store, period:cs.period, pin:'1234' });
+    cs.finalized     = true;
+    cs.finalizedDate = r.finalizedDate;
+    cs.status        = 'finalized';
     await loadStock(false);
     await loadTransactions(false);
+    renderCheckWork();
     renderMonthlyPage();
-    alert(`Check finalized. ${r.variances} variance(s) applied. Report is now available.`);
+    alert(`${STORE_NAMES[store]} check finalized. ${r.variances} variance(s) applied. Report is now available.`);
   } catch(e) { alert('Finalize error: '+e.message); }
   finally { loading(false); }
 }
 
 async function doResetCheck() {
-  loading(true, 'Resetting check...');
+  const store = S.reportStore || S.activeCheckStore || S.store;
+  loading(true, 'Resetting...');
   try {
-    await api({ action:'resetCheck', pin:'1234' });
-    S.checkStatus = 'none';
-    S.checkPeriod = '';
-    S.checkFinalized = false;
-    S.checkFinalizedDate = '';
-    S.checkCounts = {};
+    await api({ action:'resetCheck', store, pin:'1234' });
+    const cs = S.checkState[store];
+    cs.status='none'; cs.period=''; cs.finalized=false; cs.finalizedDate=''; cs.counts={};
     renderMonthlyPage();
-    if (S.page==='report') renderReportPage();
+    renderReportPage();
   } catch(e) { alert('Reset error: '+e.message); }
   finally { loading(false); }
 }
@@ -906,36 +991,59 @@ async function doResetCheck() {
 // ============================================================
 // REPORT
 // ============================================================
-async function renderReportPage() {
-  if (!S.checkFinalized) {
-    document.getElementById('reportLocked').style.display='';
-    document.getElementById('reportContent').style.display='none';
+function renderReportPage() {
+  // Update report store buttons — highlight finalized ones
+  ALL_STORES.forEach(store => {
+    const btn = document.getElementById('rpt-'+store);
+    if (!btn) return;
+    const cs = S.checkState[store];
+    btn.className = cs.finalized ? 'btn btn-success btn-sm' : 'btn btn-secondary btn-sm';
+    btn.textContent = (cs.finalized ? '✅ ' : '') + STORE_NAMES[store].replace(' Store','');
+  });
+
+  // If no report store selected, show prompt
+  if (!S.reportStore) {
+    document.getElementById('reportLocked').style.display = '';
+    document.getElementById('reportLockedMsg').textContent = 'Select a store above. Stores with a green button have a finalized check ready.';
+    document.getElementById('reportContent').style.display = 'none';
+  }
+}
+
+async function loadReport(store) {
+  S.reportStore = store;
+  const cs = S.checkState[store];
+
+  if (!cs.finalized) {
+    document.getElementById('reportLocked').style.display = '';
+    document.getElementById('reportLockedMsg').textContent = `${STORE_NAMES[store]} does not have a finalized check yet. Complete and finalize the monthly check first.`;
+    document.getElementById('reportContent').style.display = 'none';
     return;
   }
-  document.getElementById('reportLocked').style.display='none';
-  document.getElementById('reportContent').style.display='';
+
+  document.getElementById('reportLocked').style.display = 'none';
+  document.getElementById('reportContent').style.display = '';
 
   loading(true, 'Building report...');
   try {
-    const r = await api({ action:'getReport', store:S.store, period:S.checkPeriod });
+    const r = await api({ action:'getReport', store, period:cs.period });
     buildReport(r);
   } catch(e) {
-    document.getElementById('reportLocked').style.display='';
-    document.getElementById('reportContent').style.display='none';
-    document.getElementById('reportLocked').innerHTML = `<span>⚠</span><div>Report error: ${e.message}</div>`;
+    document.getElementById('reportLocked').style.display = '';
+    document.getElementById('reportLockedMsg').textContent = 'Report error: ' + e.message;
+    document.getElementById('reportContent').style.display = 'none';
   } finally { loading(false); }
 }
 
 function buildReport(r) {
-  const storeName = r.store==='chairlift' ? 'Chairlift Store' : 'Civil Store';
-  document.getElementById('reportTitle').textContent = `${storeName} - Monthly Stock Report`;
-  document.getElementById('reportMeta').textContent = `Period: ${r.period} | Finalized: ${r.finalizedDate} | Generated: ${new Date().toLocaleDateString('en-GB')} | Items: ${r.items.length}`;
+  const storeName = STORE_NAMES[r.store];
+  document.getElementById('reportTitle').textContent = `${storeName} — Monthly Stock Report`;
+  document.getElementById('reportMeta').textContent  = `Period: ${r.period}  |  Finalized: ${r.finalizedDate}  |  Generated: ${new Date().toLocaleDateString('en-GB')}  |  Items: ${r.items.length}`;
 
-  const items = r.items;
+  const items      = r.items;
   const totalValue = items.reduce((s,i)=>s+i.qty*i.price,0);
-  const zeroItems = items.filter(i=>i.qty===0);
-  const lowItems = items.filter(i=>i.qty>0&&i.qty<=5);
-  const variances = r.variances||[];
+  const zeroItems  = items.filter(i=>i.qty===0);
+  const lowItems   = items.filter(i=>i.qty>0&&i.qty<=5);
+  const variances  = r.variances||[];
 
   const cats={};
   items.forEach(i=>{
@@ -950,17 +1058,16 @@ function buildReport(r) {
       <div class="stat-grid">
         <div class="stat"><div class="lbl">Line Items</div><div class="val">${items.length}</div></div>
         <div class="stat"><div class="lbl">Total Stock Value</div><div class="val">${fmtPKR(totalValue)}</div><div class="sub">PKR</div></div>
-        <div class="stat"><div class="lbl">Zero Stock</div><div class="val" style="color:var(--danger)">${zeroItems.length}</div></div>
-        <div class="stat"><div class="lbl">Low Stock (1-5)</div><div class="val" style="color:var(--warning)">${lowItems.length}</div></div>
-        <div class="stat"><div class="lbl">Variances</div><div class="val">${variances.length}</div><div class="sub">Book vs Physical</div></div>
+        <div class="stat"><div class="lbl">Zero Stock</div><div class="val" style="color:var(--red)">${zeroItems.length}</div></div>
+        <div class="stat"><div class="lbl">Low Stock (1-5)</div><div class="val" style="color:var(--amber)">${lowItems.length}</div></div>
+        <div class="stat"><div class="lbl">Variances Found</div><div class="val">${variances.length}</div></div>
       </div>
     </div>
-
     <div class="report-section">
       <h3>Stock by Category</h3>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Category</th><th style="text-align:right">Items</th><th style="text-align:right">Total Value (PKR)</th></tr></thead>
-        <tbody>${Object.entries(cats).map(([c,d])=>`<tr><td><span class="cat-badge ${catClass(c)}">${c}</span></td><td class="num">${d.count}</td><td class="num">${fmtPKR(d.value)}</td></tr>`).join('')}</tbody>
+        <tbody>${Object.entries(cats).map(([c,d])=>`<tr><td><span class="cb ${catClass(c)}">${c}</span></td><td class="num">${d.count}</td><td class="num">${fmtPKR(d.value)}</td></tr>`).join('')}</tbody>
         <tfoot><tr style="font-weight:700;border-top:2px solid var(--border)"><td>TOTAL</td><td class="num">${items.length}</td><td class="num">${fmtPKR(totalValue)}</td></tr></tfoot>
       </table></div>
     </div>`;
@@ -972,9 +1079,9 @@ function buildReport(r) {
         <thead><tr><th>Item</th><th>Category</th><th style="text-align:right">Book</th><th style="text-align:right">Physical</th><th style="text-align:right">Variance</th></tr></thead>
         <tbody>${variances.map(v=>`<tr>
           <td class="iname">${v.itemName}</td>
-          <td><span class="cat-badge ${catClass(v.cat)}">${v.cat}</span></td>
+          <td><span class="cb ${catClass(v.cat)}">${v.cat}</span></td>
           <td class="num">${v.prevQty}</td><td class="num">${v.newQty}</td>
-          <td class="num" style="color:${v.diff<0?'var(--danger)':'var(--success)'};font-weight:700;">${v.diff>0?'+':''}${v.diff}</td>
+          <td class="num" style="color:${v.diff<0?'var(--red)':'var(--green)'};font-weight:700;">${v.diff>0?'+':''}${v.diff}</td>
         </tr>`).join('')}</tbody>
       </table></div>
     </div>`;
@@ -982,24 +1089,24 @@ function buildReport(r) {
 
   if (zeroItems.length) {
     html += `<div class="report-section">
-      <h3>Zero Stock - Replenishment Required</h3>
+      <h3>Zero Stock — Replenishment Required</h3>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Item</th><th>Description</th><th>Category</th><th>Unit</th></tr></thead>
-        <tbody>${zeroItems.map(i=>`<tr><td class="iname">${i.name}</td><td class="desc">${i.desc}</td><td><span class="cat-badge ${catClass(i.cat)}">${i.cat}</span></td><td>${i.unit}</td></tr>`).join('')}</tbody>
+        <tbody>${zeroItems.map(i=>`<tr><td class="iname">${i.name}</td><td class="desc">${i.desc}</td><td><span class="cb ${catClass(i.cat)}">${i.cat}</span></td><td>${i.unit}</td></tr>`).join('')}</tbody>
       </table></div>
     </div>`;
   }
 
   html += `<div class="report-section">
-    <h3>Full Stock List - Closing Balances</h3>
+    <h3>Full Stock List — Closing Balances</h3>
     <div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>ID</th><th>Item</th><th>Description</th><th>Category</th><th>Unit</th><th style="text-align:right">Qty</th><th style="text-align:right">Unit Price</th><th style="text-align:right">Total Value</th></tr></thead>
       <tbody>${items.map((i,n)=>`<tr>
-        <td style="color:var(--text-muted);font-size:12px;">${n+1}</td>
-        <td style="font-size:11px;color:var(--text-muted);">${i.id}</td>
+        <td style="color:var(--muted);font-size:12px;">${n+1}</td>
+        <td style="font-size:11px;color:var(--muted);">${i.id}</td>
         <td class="iname">${i.name}</td>
         <td class="desc" title="${i.desc}">${i.desc}</td>
-        <td><span class="cat-badge ${catClass(i.cat)}">${i.cat}</span></td>
+        <td><span class="cb ${catClass(i.cat)}">${i.cat}</span></td>
         <td>${i.unit}</td>
         <td class="num ${i.qty===0?'qty-zero':i.qty<=5?'qty-low':'qty-ok'}">${i.qty}</td>
         <td class="num">${i.price>0?fmtPKR(i.price):'-'}</td>
@@ -1007,7 +1114,7 @@ function buildReport(r) {
       </tr>`).join('')}</tbody>
     </table></div>
   </div>
-  <div style="margin-top:24px;padding:16px;background:#f8f9fa;border-radius:8px;font-size:12px;color:var(--text-muted);">
+  <div style="margin-top:24px;padding:16px;background:#f8f9fa;border-radius:8px;font-size:12px;color:var(--muted);">
     <strong>MJSR Store Management Portal</strong> &nbsp;|&nbsp; ${storeName} &nbsp;|&nbsp; ${r.period} Monthly Stock Report<br>
     Generated: ${new Date().toLocaleString('en-GB')} &nbsp;|&nbsp;
     Checked by: _________________________ &nbsp;|&nbsp; Approved by: _________________________ &nbsp;|&nbsp; Date: _____________
@@ -1020,39 +1127,36 @@ function buildReport(r) {
 // ADD ITEM
 // ============================================================
 function openAddItem() {
-  const cats = S.store==='pistenbully' ? CATS_PISTENBULLY : S.store==='civil' ? CATS_CIVIL : CATS_CHAIRLIFT;
-  document.getElementById('addCat').innerHTML = cats.map(c=>`<option value="${c}">${c}</option>`).join('');
   document.getElementById('addStore').value = S.store;
-  document.getElementById('addName').value='';
-  document.getElementById('addDesc').value='';
-  document.getElementById('addUnit').value='No.';
-  document.getElementById('addQty').value='0';
-  document.getElementById('addPrice').value='0';
-  document.getElementById('addRemarks').value='';
+  refreshAddCats();
+  document.getElementById('addName').value=''; document.getElementById('addDesc').value='';
+  document.getElementById('addUnit').value='No.'; document.getElementById('addQty').value='0';
+  document.getElementById('addPrice').value='0'; document.getElementById('addRemarks').value='';
   openModal('addItemModal');
+}
+
+function refreshAddCats() {
+  const store = document.getElementById('addStore').value;
+  document.getElementById('addCat').innerHTML = (STORE_CATS[store]||[]).map(c=>`<option value="${c}">${c}</option>`).join('');
 }
 
 async function saveNewItem() {
   const store = document.getElementById('addStore').value;
-  const name = document.getElementById('addName').value.trim();
+  const name  = document.getElementById('addName').value.trim();
   if (!name) { alert('Item name is required.'); return; }
-  const payload = {
-    action:'addItem', pin:'1234', store,
-    cat: document.getElementById('addCat').value,
-    name,
-    desc: document.getElementById('addDesc').value.trim(),
-    unit: document.getElementById('addUnit').value.trim()||'No.',
-    qty: parseFloat(document.getElementById('addQty').value)||0,
-    price: parseFloat(document.getElementById('addPrice').value)||0,
-    remarks: document.getElementById('addRemarks').value.trim()
-  };
-  loading(true,'Adding item...');
+  loading(true, 'Adding item...');
   try {
-    const r = await api(payload);
+    const r = await api({ action:'addItem', pin:'1234', store,
+      cat:     document.getElementById('addCat').value,
+      name,    desc:    document.getElementById('addDesc').value.trim(),
+      unit:    document.getElementById('addUnit').value.trim()||'No.',
+      qty:     parseFloat(document.getElementById('addQty').value)||0,
+      price:   parseFloat(document.getElementById('addPrice').value)||0,
+      remarks: document.getElementById('addRemarks').value.trim() });
     closeModal('addItemModal');
     await loadStock(false);
     renderStockPage();
-    alert('Item added with ID: '+r.id);
+    alert('Item added: ' + r.id);
   } catch(e) { alert('Error: '+e.message); }
   finally { loading(false); }
 }
@@ -1076,14 +1180,14 @@ async function saveAdjust() {
   const newQty = parseFloat(document.getElementById('adjNew').value);
   const reason = document.getElementById('adjReason').value.trim();
   if (isNaN(newQty)||newQty<0) { alert('Enter a valid quantity.'); return; }
-  loading(true,'Adjusting...');
+  loading(true, 'Adjusting...');
   try {
     const r = await api({ action:'adjustStock', pin:'1234', store:S.store, itemId:adjustId, newQty, reason });
     const item = S.stock[S.store].find(i=>i.id===adjustId);
     if (item) item.qty = newQty;
     closeModal('adjustModal');
     renderStockTable();
-    alert(`Adjusted. Previous: ${r.prevQty} -> New: ${newQty}`);
+    alert(`Adjusted. Previous: ${r.prevQty} \u2192 New: ${newQty}`);
   } catch(e) { alert('Error: '+e.message); }
   finally { loading(false); }
 }
@@ -1093,34 +1197,26 @@ async function saveAdjust() {
 // ============================================================
 function requirePIN(label, cb) {
   document.getElementById('pinLabel').textContent = 'Enter PIN to: ' + label;
-  document.getElementById('pinInput').value='';
-  document.getElementById('pinError').style.display='none';
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').style.display = 'none';
   S.pinCb = cb;
   document.getElementById('pinOverlay').classList.add('open');
-  setTimeout(()=>document.getElementById('pinInput').focus(),100);
+  setTimeout(()=>document.getElementById('pinInput').focus(), 100);
 }
-function closePIN() {
-  document.getElementById('pinOverlay').classList.remove('open');
-  S.pinCb = null;
-}
-document.getElementById('pinInput').addEventListener('keyup', e=>{
-  if (e.target.value.length===4) {
-    if (e.target.value==='1234') {
-      closePIN();
-      if (S.pinCb) S.pinCb();
-    } else {
-      document.getElementById('pinError').style.display='block';
-      e.target.value='';
-    }
+function closePIN() { document.getElementById('pinOverlay').classList.remove('open'); S.pinCb=null; }
+document.getElementById('pinInput').addEventListener('keyup', e => {
+  if (e.target.value.length === 4) {
+    if (e.target.value === '1234') { closePIN(); if (S.pinCb) S.pinCb(); }
+    else { document.getElementById('pinError').style.display='block'; e.target.value=''; }
   }
 });
 
 // ============================================================
-// MODALS
+// MODAL HELPERS
 // ============================================================
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
 
 // ============================================================
 // UTILS
@@ -1128,24 +1224,36 @@ document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>
 function fmtPKR(n) {
   if (!n) return '0';
   if (n>=1000000) return (n/1000000).toFixed(2)+'M';
-  if (n>=1000) return (n/1000).toFixed(1)+'K';
+  if (n>=1000)    return (n/1000).toFixed(1)+'K';
   return n.toLocaleString('en-PK');
 }
 function todayStr() { return new Date().toISOString().slice(0,10); }
-function hl(text,q) {
+function hl(text, q) {
   if (!q||!text) return text||'';
   return text.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');
 }
 function catClass(cat) {
   const m = {
+    // Chairlift
     'Spare Parts':'c-spare','Tools':'c-tools','Machine Tools':'c-mach',
-    'Lubricants & Consumables':'c-lube','Rescue':'c-rescue','SMS Jackets':'c-sms',
-    'Fixed Assets':'c-asset',
-    'Welding & Fabrication':'c-mach','Abrasives & Discs':'c-tools',
-    'Paints & Finishes':'c-sms','Timber & Civil':'c-civil',
-    'Fixings & Fasteners':'c-spare','Consumables & Sealants':'c-lube',
-    'Wheels & Tracks':'c-civil','Axels':'c-mach','Sprocket Drive':'c-spare',
-    'Engine':'c-rescue','Tools & Spares':'c-tools'
+    'Lubricants & Consumables':'c-lube','Rescue':'c-rescue','SMS Jackets':'c-sms','Fixed Assets':'c-asset',
+    // Civil
+    'Welding & Fabrication':'c-mach','Abrasives & Discs':'c-tools','Paints & Finishes':'c-sms',
+    'Timber & Civil':'c-civil','Fixings & Fasteners':'c-spare','Consumables & Sealants':'c-lube',
+    // PistenBully
+    'Wheels & Tracks':'c-civil','Axels':'c-mach','Sprocket Drive':'c-spare','Engine':'c-rescue','Tools & Spares':'c-tools',
+    // Electrical
+    'Tools & Equipment':'c-tools','Cables & Wiring':'c-elec','Switches & Sockets':'c-elec',
+    'MCBs & Distribution':'c-elec','Lighting':'c-sms','Conduit & Trunking':'c-lube',
+    'Meters & Controls':'c-mach','PC Rooms Electrical':'c-elec',
+    // Zipline
+    'Ropes & Cables':'c-zip','Trolleys & Pulleys':'c-zip','Harnesses & PPE':'c-rescue',
+    'Carabiners & Hardware':'c-spare','Braking Systems':'c-mach','Tools & Consumables':'c-tools',
+    // Giant Swing
+    'Giant Swing':'c-swing','Sling Shot':'c-swing','Accessories & Tools':'c-tools',
+    // Snowmaking
+    'Fan Guns & Nozzles':'c-snow','Pipes & Fittings':'c-snow','Electrical & Controls':'c-elec',
+    'Lubricants & Antifreeze':'c-lube','PPE & Cold Weather Gear':'c-sms',
   };
   return m[cat]||'c-asset';
 }
