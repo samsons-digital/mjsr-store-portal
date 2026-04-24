@@ -23,21 +23,33 @@
   .nav-page:hover,.nav-page.active{background:rgba(255,255,255,.15);color:#fff;}
   .nav-spacer{flex:1;}
 
-  /* STORE SELECTOR BAR — scrollable pill row */
-  .store-bar{display:flex;gap:4px;background:rgba(0,0,0,.18);border-radius:7px;padding:3px;overflow-x:auto;max-width:420px;scrollbar-width:none;}
-  .store-bar::-webkit-scrollbar{display:none;}
-  .store-btn{background:transparent;border:none;color:rgba(255,255,255,.7);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:500;font-family:var(--font);white-space:nowrap;transition:all .15s;}
-  .store-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
-  .store-btn.active{background:rgba(255,255,255,.22);color:#fff;font-weight:700;}
-
-  /* STORE COLOUR ACCENTS */
-  .store-btn[data-store=chairlift].active{background:#1d4ed8;}
-  .store-btn[data-store=civil].active{background:#9a3412;}
-  .store-btn[data-store=pistenbully].active{background:#166534;}
-  .store-btn[data-store=electrical].active{background:#92400e;}
-  .store-btn[data-store=zipline].active{background:#6b21a8;}
-  .store-btn[data-store=giantswing].active{background:#0e7490;}
-  .store-btn[data-store=snowmaking].active{background:#1e3a5f;}
+  /* STORE DROPDOWN */
+  .store-dropdown-wrap{display:flex;align-items:center;gap:8px;}
+  .store-icon{font-size:16px;line-height:1;}
+  .store-select{
+    background:rgba(0,0,0,.25);
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:6px;
+    color:#fff;
+    font-family:var(--font);
+    font-size:13px;
+    font-weight:600;
+    padding:6px 28px 6px 10px;
+    cursor:pointer;
+    outline:none;
+    min-width:160px;
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 9px center;
+    transition:border-color .15s,background-color .15s;
+  }
+  .store-select:hover{background-color:rgba(0,0,0,.35);border-color:rgba(255,255,255,.45);}
+  .store-select:focus{border-color:rgba(255,255,255,.6);box-shadow:0 0 0 2px rgba(255,255,255,.15);}
+  .store-select option{background:#334155;color:#fff;font-weight:500;}
+  /* Colour dot indicator */
+  .store-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;}
 
   /* MAIN */
   .main{max-width:1300px;margin:0 auto;padding:18px 16px;}
@@ -211,14 +223,17 @@
   <button class="nav-page" onclick="showPage('monthly')">Monthly Check</button>
   <button class="nav-page" onclick="showPage('report')">Report</button>
   <div class="nav-spacer"></div>
-  <div class="store-bar">
-    <button class="store-btn active" data-store="chairlift"  onclick="setStore('chairlift')">Chairlift</button>
-    <button class="store-btn"        data-store="civil"       onclick="setStore('civil')">Civil</button>
-    <button class="store-btn"        data-store="pistenbully" onclick="setStore('pistenbully')">PistenBully</button>
-    <button class="store-btn"        data-store="electrical"  onclick="setStore('electrical')">Electrical</button>
-    <button class="store-btn"        data-store="zipline"     onclick="setStore('zipline')">Zipline</button>
-    <button class="store-btn"        data-store="giantswing"  onclick="setStore('giantswing')">Giant Swing</button>
-    <button class="store-btn"        data-store="snowmaking"  onclick="setStore('snowmaking')">Snowmaking</button>
+  <div class="store-dropdown-wrap">
+    <span class="store-dot" id="storeDot" style="background:#1d4ed8;"></span>
+    <select class="store-select" id="storeSelect" onchange="setStore(this.value)">
+      <option value="chairlift">🏔 Chairlift Store</option>
+      <option value="civil">🏗 Civil Store</option>
+      <option value="pistenbully">🚜 PistenBully Store</option>
+      <option value="electrical">⚡ Electrical Store</option>
+      <option value="zipline">🪂 Zipline Store</option>
+      <option value="giantswing">🎡 Giant Swing Store</option>
+      <option value="snowmaking">❄️ Snowmaking Store</option>
+    </select>
   </div>
 </nav>
 
@@ -603,10 +618,19 @@ function showPage(page) {
   if (page === 'report')       renderReportPage();
 }
 
+const STORE_COLORS = {
+  chairlift:'#1d4ed8', civil:'#9a3412', pistenbully:'#166534',
+  electrical:'#92400e', zipline:'#6b21a8', giantswing:'#0e7490', snowmaking:'#1e3a5f'
+};
+
 function setStore(store) {
   S.store = store;
-  document.querySelectorAll('.store-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.store-btn[data-store="${store}"]`).classList.add('active');
+  // Sync dropdown
+  const sel = document.getElementById('storeSelect');
+  if (sel) sel.value = store;
+  // Update colour dot
+  const dot = document.getElementById('storeDot');
+  if (dot) dot.style.background = STORE_COLORS[store] || '#475569';
   showPage(S.page);
 }
 
