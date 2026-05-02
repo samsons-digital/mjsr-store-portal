@@ -403,7 +403,7 @@
             <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
           </div>
           <div id="checkStatusBadge"></div>
-          <button class="btn btn-success" id="finalizeBtn" style="display:none;" onclick="requirePIN('Finalize Check',doFinalizeCheck)">Finalize Check</button>
+          <button class="btn btn-success" id="finalizeBtn" style="display:none;font-size:14px;padding:10px 20px;" onclick="requirePIN('Submit Month End Check',doFinalizeCheck)">Finalize Check</button>
           <button class="btn btn-secondary btn-sm" onclick="closeCheckWork()">Close</button>
         </div>
         <div class="filter-bar" style="margin-bottom:14px;">
@@ -983,12 +983,17 @@ async function openCheckStore(store) {
   S.activeCheckStore = store;
   const cs = S.checkState[store];
 
+  // Guard period before any API call
+  if (!cs.period) cs.period = new Date().toLocaleString('default',{month:'long',year:'numeric'});
+
   // Load existing counts from server if check is active or finalized
   if (cs.status !== 'none') {
     loading(true, 'Loading check data...');
     try {
       const r = await api({ action:'getCheckStatus', store, period:cs.period });
       cs.counts = r.counts || {};
+      // Sync period from server in case it was set there
+      if (r.period) cs.period = r.period;
     } catch(e) { cs.counts = {}; }
     finally { loading(false); }
   }
@@ -1032,8 +1037,17 @@ function renderCheckWork() {
     badge.innerHTML = '';
   }
 
-  const allDone = counted >= items.length && items.length > 0;
-  document.getElementById('finalizeBtn').style.display = (allDone && !cs.finalized) ? '' : 'none';
+  // Show Finalize as soon as any counts exist — don't require 100% completion
+  const hasAnyCounts = counted > 0 && !cs.finalized;
+  document.getElementById('finalizeBtn').style.display = hasAnyCounts ? '' : 'none';
+  // Update button label to show remaining uncounted items
+  const finalBtn = document.getElementById('finalizeBtn');
+  if (finalBtn && hasAnyCounts) {
+    const uncounted = items.length - counted;
+    finalBtn.textContent = uncounted > 0
+      ? `Submit Check (${uncounted} items uncounted)`
+      : 'Finalize Check ✓ All items counted';
+  }
 
   // Category filter
   const cats   = [...new Set(items.map(i => i.cat))];
@@ -1081,36 +1095,67 @@ function updateCount(store, id, val) {
   const counted = Object.keys(cs.counts).length;
   document.getElementById('checkProgressLabel').textContent = `${counted} / ${items.length} items`;
   document.getElementById('progressFill').style.width = (items.length?Math.round(counted/items.length*100):0)+'%';
-  document.getElementById('finalizeBtn').style.display = (counted>=items.length && items.length>0 && !cs.finalized) ? '' : 'none';
+  const finBtn = document.getElementById('finalizeBtn');
+  if (finBtn) {
+    finBtn.style.display = (counted > 0 && !cs.finalized) ? '' : 'none';
+    if (counted > 0 && !cs.finalized) {
+      const uncounted2 = S.stock[store].length - counted;
+      finBtn.textContent = uncounted2 > 0
+        ? `Submit Check (${uncounted2} items uncounted)`
+        : 'Finalize Check ✓ All items counted';
+    }
+  }
 }
 
 async function saveCheckProgress() {
   const store = S.activeCheckStore;
   if (!store) return;
   const cs = S.checkState[store];
+  // Guard period
+  if (!cs.period) cs.period = new Date().toLocaleString('default',{month:'long',year:'numeric'});
   if (Object.keys(cs.counts).length === 0) { alert('No counts entered yet.'); return; }
   loading(true, 'Saving progress...');
   try {
     await api({ action:'saveCheckCounts', store, period:cs.period, counts:cs.counts });
-    alert('Progress saved.');
-  } catch(e) { alert('Save error: '+e.message); }
+    alert('Progress saved to Google Sheet.');
+  } catch(e) { alert('Save error: ' + e.message); }
   finally { loading(false); }
 }
 
 async function doFinalizeCheck() {
   const store = S.activeCheckStore;
-  if (!store) return;
+  if (!store) { alert('No store selected. Please open a store check first.'); return; }
   const cs    = S.checkState[store];
   const items = S.stock[store];
-  if (Object.keys(cs.counts).length < items.length) {
-    if (!confirm(`Only ${Object.keys(cs.counts).length} of ${items.length} items counted. Finalize anyway? Uncounted items keep their current book quantity.`)) return;
+
+  // Guard: ensure period is set
+  if (!cs.period) {
+    cs.period = new Date().toLocaleString('default',{month:'long',year:'numeric'});
   }
-  loading(true, 'Saving counts...');
+
+  const countedKeys = Object.keys(cs.counts);
+  if (countedKeys.length === 0) {
+    alert('No counts have been entered yet. Please enter at least one item count before submitting.');
+    return;
+  }
+
+  const uncounted = items.length - countedKeys.length;
+  const confirmMsg = uncounted > 0
+    ? `${countedKeys.length} of ${items.length} items have been counted.\n\n${uncounted} uncounted item(s) will keep their current book quantity — no change will be applied to them.\n\nSubmit and finalize this check?`
+    : `All ${items.length} items have been counted.\n\nSubmit and finalize this check?`;
+
+  if (!confirm(confirmMsg)) return;
+
+  loading(true, 'Saving counts to Google Sheet...');
   try {
     await api({ action:'saveCheckCounts', store, period:cs.period, counts:cs.counts });
-  } catch(e) { loading(false); alert('Save error: '+e.message); return; }
+  } catch(e) {
+    loading(false);
+    alert('Save error: ' + e.message + '\n\nCheck your internet connection and try again.');
+    return;
+  }
 
-  loading(true, 'Finalizing...');
+  loading(true, 'Finalizing check and updating stock quantities...');
   try {
     const r = await api({ action:'finalizeCheck', store, period:cs.period, pin:'1234' });
     cs.finalized     = true;
@@ -1120,8 +1165,10 @@ async function doFinalizeCheck() {
     await loadTransactions(false);
     renderCheckWork();
     renderMonthlyPage();
-    alert(`${STORE_NAMES[store]} check finalized. ${r.variances} variance(s) applied. Report is now available.`);
-  } catch(e) { alert('Finalize error: '+e.message); }
+    alert(`${STORE_NAMES[store]} check finalized successfully.\n\n${r.updated} items processed.\n${r.variances} variance(s) found and applied.\n\nThe Report page is now unlocked for this store.`);
+  } catch(e) {
+    alert('Finalize error: ' + e.message + '\n\nCounts were saved. Please try submitting again.');
+  }
   finally { loading(false); }
 }
 
