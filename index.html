@@ -228,6 +228,7 @@
     <input class="pin-input" type="password" id="pinInput" maxlength="4" placeholder="****" autocomplete="off">
     <div class="pin-error" id="pinError">Incorrect PIN. Try again.</div>
     <div class="btn-row" style="justify-content:center;margin-top:16px;">
+      <button class="btn btn-primary" onclick="submitPIN()" style="min-width:100px;">Confirm</button>
       <button class="btn btn-secondary btn-sm" onclick="closePIN()">Cancel</button>
     </div>
   </div>
@@ -1116,7 +1117,13 @@ async function saveCheckProgress() {
   if (Object.keys(cs.counts).length === 0) { alert('No counts entered yet.'); return; }
   loading(true, 'Saving progress...');
   try {
-    await api({ action:'saveCheckCounts', store, period:cs.period, counts:cs.counts });
+    const entries = Object.entries(cs.counts);
+    const chunkSize = 50;
+    for (let i = 0; i < entries.length; i += chunkSize) {
+      const chunk = Object.fromEntries(entries.slice(i, i + chunkSize));
+      loading(true, `Saving ${i+1}–${Math.min(i+chunkSize, entries.length)} of ${entries.length}...`);
+      await api({ action:'saveCheckCounts', store, period:cs.period, counts:chunk });
+    }
     alert('Progress saved to Google Sheet.');
   } catch(e) { alert('Save error: ' + e.message); }
   finally { loading(false); }
@@ -1140,15 +1147,23 @@ async function doFinalizeCheck() {
   }
 
   const uncounted = items.length - countedKeys.length;
-  const confirmMsg = uncounted > 0
-    ? `${countedKeys.length} of ${items.length} items have been counted.\n\n${uncounted} uncounted item(s) will keep their current book quantity — no change will be applied to them.\n\nSubmit and finalize this check?`
-    : `All ${items.length} items have been counted.\n\nSubmit and finalize this check?`;
 
-  if (!confirm(confirmMsg)) return;
+  // No confirm() dialog — PIN entry is the confirmation gate
+  // Just show a loading message that includes the count summary
+  const summary = uncounted > 0
+    ? `Saving ${countedKeys.length} counts (${uncounted} items uncounted)...`
+    : `Saving all ${items.length} counts...`;
 
-  loading(true, 'Saving counts to Google Sheet...');
+  loading(true, summary);
   try {
-    await api({ action:'saveCheckCounts', store, period:cs.period, counts:cs.counts });
+    // Chunk counts into batches of 50 to avoid GAS payload limits on large stores
+    const countEntries = Object.entries(cs.counts);
+    const chunkSize = 50;
+    for (let i = 0; i < countEntries.length; i += chunkSize) {
+      const chunk = Object.fromEntries(countEntries.slice(i, i + chunkSize));
+      loading(true, `Saving counts ${i+1}–${Math.min(i+chunkSize, countEntries.length)} of ${countEntries.length}...`);
+      await api({ action:'saveCheckCounts', store, period:cs.period, counts:chunk });
+    }
   } catch(e) {
     loading(false);
     alert('Save error: ' + e.message + '\n\nCheck your internet connection and try again.');
@@ -1600,11 +1615,20 @@ function requirePIN(label, cb) {
   setTimeout(()=>document.getElementById('pinInput').focus(), 100);
 }
 function closePIN() { document.getElementById('pinOverlay').classList.remove('open'); S.pinCb=null; }
-document.getElementById('pinInput').addEventListener('keyup', e => {
-  if (e.target.value.length === 4) {
-    if (e.target.value === '1234') { closePIN(); if (S.pinCb) S.pinCb(); }
-    else { document.getElementById('pinError').style.display='block'; e.target.value=''; }
+function submitPIN() {
+  const val = document.getElementById('pinInput').value;
+  if (val === '1234') {
+    const cb = S.pinCb;
+    closePIN();
+    if (cb) cb();
+  } else {
+    document.getElementById('pinError').style.display='block';
+    document.getElementById('pinInput').value='';
+    document.getElementById('pinInput').focus();
   }
+}
+document.getElementById('pinInput').addEventListener('keyup', e => {
+  if (e.target.value.length === 4) submitPIN();
 });
 
 // ============================================================
