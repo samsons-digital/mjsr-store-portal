@@ -6,11 +6,11 @@
 <title>MJSR Store Management Portal</title>
 <style>
   :root {
-    --nav-bg:#475569; --accent:#475569; --accent-hover:#334155; --accent-light:#64748b;
+    --nav-bg:#1B2C4D; --accent:#1B2C4D; --accent-hover:#14213a; --accent-light:#B8922E;
     --bg:#f8f9fa; --card:#fff; --border:#e2e8f0;
     --text:#1e293b; --muted:#64748b;
     --green:#16a34a; --amber:#d97706; --red:#dc2626;
-    --font:'Segoe UI',system-ui,sans-serif;
+    --font:Arial,Helvetica,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;}
@@ -154,6 +154,23 @@
   .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;}
   .modal-body{padding:20px;} .modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
 
+  /* v4.1 entry gate and lock */
+  .st-lock{background:#B8922E;color:#fff;border:none;border-radius:8px;padding:6px 13px;font-weight:700;font-size:12px;cursor:pointer;font-family:var(--font);margin-left:8px;white-space:nowrap;}
+  #stGate{position:fixed;inset:0;background:#1B2C4D;z-index:9999;display:none;align-items:center;justify-content:center;padding:16px;font-family:Arial,Helvetica,sans-serif;}
+  #stGate.show{display:flex;}
+  .stg-card{background:#fff;border-radius:16px;border-top:5px solid #B8922E;width:100%;max-width:340px;padding:26px 22px 18px;text-align:center;box-shadow:0 18px 40px rgba(0,0,0,.35);}
+  .stg-co{color:#B8922E;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+  .stg-title{color:#1B2C4D;font-size:22px;font-weight:700;margin:6px 0 4px;}
+  .stg-sub{color:#5A6B85;font-size:12px;margin-bottom:16px;}
+  .stg-dots{display:flex;justify-content:center;gap:12px;margin-bottom:16px;}
+  .stg-dot{width:13px;height:13px;border-radius:50%;border:2px solid #1B2C4D;}
+  .stg-dot.on{background:#1B2C4D;}
+  .stg-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .stg-key{background:#F4F6F9;border:1px solid #DDE3EC;border-radius:12px;height:56px;font-size:20px;font-weight:700;color:#1B2C4D;cursor:pointer;font-family:Arial,Helvetica,sans-serif;}
+  .stg-key.small{font-size:13px;color:#5A6B85;}
+  .stg-err{color:#dc2626;font-size:12px;font-weight:700;min-height:18px;margin-top:12px;}
+  .stg-ver{color:#8A97AB;font-size:11px;margin-top:8px;}
+
   /* PIN */
   .pin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;}
   .pin-overlay.open{display:flex;}
@@ -211,6 +228,22 @@
 </style>
 </head>
 <body>
+<div id="stGate">
+  <div class="stg-card">
+    <div class="stg-co">Samsons Group of Companies</div>
+    <div class="stg-title">MJSR Stores</div>
+    <div class="stg-sub">Restricted access, enter the PIN</div>
+    <div class="stg-dots"><span class="stg-dot"></span><span class="stg-dot"></span><span class="stg-dot"></span><span class="stg-dot"></span></div>
+    <div class="stg-keys">
+      <button class="stg-key" onclick="stKey('1')">1</button><button class="stg-key" onclick="stKey('2')">2</button><button class="stg-key" onclick="stKey('3')">3</button>
+      <button class="stg-key" onclick="stKey('4')">4</button><button class="stg-key" onclick="stKey('5')">5</button><button class="stg-key" onclick="stKey('6')">6</button>
+      <button class="stg-key" onclick="stKey('7')">7</button><button class="stg-key" onclick="stKey('8')">8</button><button class="stg-key" onclick="stKey('9')">9</button>
+      <button class="stg-key small" onclick="stKey('C')">CLR</button><button class="stg-key" onclick="stKey('0')">0</button><button class="stg-key small" onclick="stKey('B')">&#9003;</button>
+    </div>
+    <div class="stg-err" id="stGateErr"></div>
+    <div class="stg-ver">MJSR Stores v4.1</div>
+  </div>
+</div>
 
 <!-- LOADING -->
 <div class="loading-overlay" id="loadingOverlay">
@@ -236,7 +269,7 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">MJSR Stores <span>v4.0</span></div>
+  <div class="nav-logo">MJSR Stores <span>v4.1</span></div>
   <button class="nav-page active" onclick="showPage('dashboard')">Dashboard</button>
   <button class="nav-page" onclick="showPage('stock')">Stock View</button>
   <button class="nav-page" onclick="showPage('transactions')">Transactions</button>
@@ -256,6 +289,7 @@
       <option value="snowmaking">❄️ Snowmaking Store</option>
     </select>
   </div>
+  <button class="st-lock" onclick="stLock()">Lock</button>
 </nav>
 
 <div class="main">
@@ -455,7 +489,7 @@
 
   <!-- BIN CARD -->
   <div class="page" id="page-bincard">
-    <div class="section-title">Bin Card — Scrap &amp; Defect Log</div>
+    <div class="section-title">Bin Card - Scrap &amp; Defect Log</div>
     <div class="section-sub">Log defective or condemned items for write-off. Each entry reduces stock quantity and creates a permanent record.</div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -645,7 +679,7 @@ const S = {
   page:  'dashboard',
   stock: { chairlift:[], civil:[], pistenbully:[], electrical:[], zipline:[], giantswing:[], snowmaking:[] },
   transactions: [],
-  // Per-store check state — keyed by store
+  // Per-store check state - keyed by store
   checkState: {
     chairlift:   { status:'none', period:'', finalized:false, finalizedDate:'', counts:{} },
     civil:       { status:'none', period:'', finalized:false, finalizedDate:'', counts:{} },
@@ -659,20 +693,82 @@ const S = {
   reportStore: null,
   binCardEntries: [],
   scrapItem: null,
-  pinCb: null
+  pinCb: null,
+  adminPin: ''
 };
 
 // ============================================================
 // API
 // ============================================================
+// v4.1: every call carries the session token. Reads retry on cold starts (1.5 s then 3 s),
+// writes are sent once so nothing is saved twice. An expired session shows the PIN screen.
+var ST_TOKEN_KEY = 'mjsr_store_token_v41';
+var _stTok = '';
+function stGetToken() { try { return sessionStorage.getItem(ST_TOKEN_KEY) || _stTok; } catch (e) { return _stTok; } }
+function stSetToken(t) { _stTok = t || ''; try { if (t) sessionStorage.setItem(ST_TOKEN_KEY, t); else sessionStorage.removeItem(ST_TOKEN_KEY); } catch (e) {} }
+async function rawApi(payload) {
+  const r = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) });
+  return r.json();
+}
 async function api(payload) {
-  const r = await fetch(SCRIPT_URL, {
-    method:'POST', headers:{'Content-Type':'text/plain'}, body:JSON.stringify(payload)
-  });
-  const d = await r.json();
+  payload = Object.assign({}, payload, { token: stGetToken() });
+  const isRead = /^(get|init)/.test(payload.action || '');
+  const delays = [0, 1500, 3000];
+  let d = null, lastErr = null;
+  for (let i = 0; i < (isRead ? 3 : 1); i++) {
+    if (delays[i]) await new Promise(r => setTimeout(r, delays[i]));
+    try { d = await rawApi(payload); lastErr = null; break; } catch (e) { lastErr = e; }
+  }
+  if (lastErr) throw lastErr;
+  if (d && d.auth) { stLock('Session expired. Enter the PIN again.'); throw new Error('Session expired. Enter the PIN again.'); }
   if (!d.success) throw new Error(d.error || 'Unknown error');
   return d;
 }
+
+// ===== v4.1 ENTRY GATE =====
+var _stPin = '', _stBusy = false, _stInited = false;
+function stDots() { document.querySelectorAll('#stGate .stg-dot').forEach((d, i) => d.classList.toggle('on', i < _stPin.length)); }
+function stKey(k) {
+  if (_stBusy) return;
+  if (k === 'C') _stPin = ''; else if (k === 'B') _stPin = _stPin.slice(0, -1); else if (_stPin.length < 4) _stPin += k;
+  stDots();
+  if (_stPin.length === 4) stSubmit();
+}
+async function stSubmit() {
+  _stBusy = true;
+  const err = document.getElementById('stGateErr');
+  err.style.color = '#5A6B85'; err.textContent = 'Checking...';
+  let j = null;
+  try { j = await rawApi({ action:'unlock', pin:_stPin }); } catch (e) { j = null; }
+  _stBusy = false; _stPin = ''; stDots();
+  if (j && j.success && j.token) {
+    stSetToken(j.token); err.textContent = '';
+    document.getElementById('stGate').classList.remove('show');
+    if (_stInited) { location.reload(); return; }
+    _stInited = true; init();
+  } else {
+    err.style.color = '#dc2626';
+    err.textContent = j ? (j.error || 'Incorrect PIN. Please try again.') : 'Could not reach the server. Check the connection and try again.';
+  }
+}
+function stLock(msg) {
+  const t = stGetToken();
+  stSetToken(''); S.adminPin = '';
+  if (t && !msg) rawApi({ action:'lock', token:t }).catch(function(){});
+  _stPin = ''; stDots();
+  const err = document.getElementById('stGateErr');
+  if (err) { err.style.color = '#dc2626'; err.textContent = msg || ''; }
+  document.getElementById('stGate').classList.add('show');
+}
+function stStart() {
+  if (stGetToken()) { _stInited = true; init(); }
+  else document.getElementById('stGate').classList.add('show');
+}
+document.addEventListener('keydown', function(e) {
+  const g = document.getElementById('stGate');
+  if (!g || !g.classList.contains('show')) return;
+  if (/^[0-9]$/.test(e.key)) stKey(e.key); else if (e.key === 'Backspace') stKey('B'); else if (e.key === 'Escape') stKey('C');
+});
 
 function loading(show, msg) {
   document.getElementById('loadingOverlay').classList.toggle('open', show);
@@ -770,7 +866,7 @@ function renderDashboard() {
   const items     = S.stock[S.store];
   const storeName = STORE_NAMES[S.store];
   const cs        = S.checkState[S.store];
-  document.getElementById('dashTitle').textContent = storeName + ' — Dashboard';
+  document.getElementById('dashTitle').textContent = storeName + ' - Dashboard';
   document.getElementById('dashSub').textContent   = '';
 
   const totalValue = items.reduce((s,i) => s + i.qty*i.price, 0);
@@ -814,7 +910,7 @@ function renderDashboard() {
 // STOCK TABLE
 // ============================================================
 function renderStockPage() {
-  document.getElementById('stockTitle').textContent = STORE_NAMES[S.store] + ' — Inventory';
+  document.getElementById('stockTitle').textContent = STORE_NAMES[S.store] + ' - Inventory';
   document.getElementById('stockSub').textContent   = '';
   const cats = [...new Set(S.stock[S.store].map(i => i.cat))];
   const sel  = document.getElementById('stockCatF');
@@ -954,7 +1050,7 @@ function txnRowHtml(t) {
 }
 
 // ============================================================
-// MONTHLY CHECK — per-store independent
+// MONTHLY CHECK - per-store independent
 // ============================================================
 function renderMonthlyPage() {
   // Render overview cards for all 7 stores
@@ -1016,7 +1112,7 @@ function renderCheckWork() {
   const cs    = S.checkState[store];
   const items = S.stock[store];
 
-  document.getElementById('checkWorkTitle').textContent = STORE_NAMES[store] + ' — Physical Count';
+  document.getElementById('checkWorkTitle').textContent = STORE_NAMES[store] + ' - Physical Count';
   document.getElementById('checkWorkPeriod').textContent = cs.period || new Date().toLocaleString('default',{month:'long',year:'numeric'});
 
   // Start check if not started
@@ -1038,7 +1134,7 @@ function renderCheckWork() {
     badge.innerHTML = '';
   }
 
-  // Show Finalize as soon as any counts exist — don't require 100% completion
+  // Show Finalize as soon as any counts exist - don't require 100% completion
   const hasAnyCounts = counted > 0 && !cs.finalized;
   document.getElementById('finalizeBtn').style.display = hasAnyCounts ? '' : 'none';
   // Update button label to show remaining uncounted items
@@ -1148,7 +1244,7 @@ async function doFinalizeCheck() {
 
   const uncounted = items.length - countedKeys.length;
 
-  // No confirm() dialog — PIN entry is the confirmation gate
+  // No confirm() dialog - PIN entry is the confirmation gate
   // Just show a loading message that includes the count summary
   const summary = uncounted > 0
     ? `Saving ${countedKeys.length} counts (${uncounted} items uncounted)...`
@@ -1172,7 +1268,7 @@ async function doFinalizeCheck() {
 
   loading(true, 'Finalizing check and updating stock quantities...');
   try {
-    const r = await api({ action:'finalizeCheck', store, period:cs.period, pin:'1234' });
+    const r = await api({ action:'finalizeCheck', store, period:cs.period, pin:S.adminPin });
     cs.finalized     = true;
     cs.finalizedDate = r.finalizedDate;
     cs.status        = 'finalized';
@@ -1191,7 +1287,7 @@ async function doResetCheck() {
   const store = S.reportStore || S.activeCheckStore || S.store;
   loading(true, 'Resetting...');
   try {
-    await api({ action:'resetCheck', store, pin:'1234' });
+    await api({ action:'resetCheck', store, pin:S.adminPin });
     const cs = S.checkState[store];
     cs.status='none'; cs.period=''; cs.finalized=false; cs.finalizedDate=''; cs.counts={};
     renderMonthlyPage();
@@ -1204,7 +1300,7 @@ async function doResetCheck() {
 // REPORT
 // ============================================================
 function renderReportPage() {
-  // Update report store buttons — highlight finalized ones
+  // Update report store buttons - highlight finalized ones
   ALL_STORES.forEach(store => {
     const btn = document.getElementById('rpt-'+store);
     if (!btn) return;
@@ -1248,7 +1344,7 @@ async function loadReport(store) {
 
 function buildReport(r) {
   const storeName = STORE_NAMES[r.store];
-  document.getElementById('reportTitle').textContent = `${storeName} — Monthly Stock Report`;
+  document.getElementById('reportTitle').textContent = `${storeName} - Monthly Stock Report`;
   document.getElementById('reportMeta').textContent  = `Period: ${r.period}  |  Finalized: ${r.finalizedDate}  |  Generated: ${new Date().toLocaleDateString('en-GB')}  |  Items: ${r.items.length}`;
 
   const items      = r.items;
@@ -1301,7 +1397,7 @@ function buildReport(r) {
 
   if (zeroItems.length) {
     html += `<div class="report-section">
-      <h3>Zero Stock — Replenishment Required</h3>
+      <h3>Zero Stock - Replenishment Required</h3>
       <div class="tbl-wrap"><table>
         <thead><tr><th>Item</th><th>Description</th><th>Category</th><th>Unit</th></tr></thead>
         <tbody>${zeroItems.map(i=>`<tr><td class="iname">${i.name}</td><td class="desc">${i.desc}</td><td><span class="cb ${catClass(i.cat)}">${i.cat}</span></td><td>${i.unit}</td></tr>`).join('')}</tbody>
@@ -1310,7 +1406,7 @@ function buildReport(r) {
   }
 
   html += `<div class="report-section">
-    <h3>Full Stock List — Closing Balances</h3>
+    <h3>Full Stock List - Closing Balances</h3>
     <div class="tbl-wrap"><table>
       <thead><tr><th>#</th><th>ID</th><th>Item</th><th>Description</th><th>Category</th><th>Unit</th><th style="text-align:right">Qty</th><th style="text-align:right">Unit Price</th><th style="text-align:right">Total Value</th></tr></thead>
       <tbody>${items.map((i,n)=>`<tr>
@@ -1358,7 +1454,7 @@ async function saveNewItem() {
   if (!name) { alert('Item name is required.'); return; }
   loading(true, 'Adding item...');
   try {
-    const r = await api({ action:'addItem', pin:'1234', store,
+    const r = await api({ action:'addItem', pin:S.adminPin, store,
       cat:     document.getElementById('addCat').value,
       name,    desc:    document.getElementById('addDesc').value.trim(),
       unit:    document.getElementById('addUnit').value.trim()||'No.',
@@ -1394,7 +1490,7 @@ async function saveAdjust() {
   if (isNaN(newQty)||newQty<0) { alert('Enter a valid quantity.'); return; }
   loading(true, 'Adjusting...');
   try {
-    const r = await api({ action:'adjustStock', pin:'1234', store:S.store, itemId:adjustId, newQty, reason });
+    const r = await api({ action:'adjustStock', pin:S.adminPin, store:S.store, itemId:adjustId, newQty, reason });
     const item = S.stock[S.store].find(i=>i.id===adjustId);
     if (item) item.qty = newQty;
     closeModal('adjustModal');
@@ -1472,7 +1568,7 @@ async function submitScrap() {
 
   loading(true, 'Logging scrap entry...');
   try {
-    const r = await api({ action:'logScrap', pin:'1234', store,
+    const r = await api({ action:'logScrap', pin:S.adminPin, store,
       itemId:S.scrapItem.id, qtyScrapped:qty, condition, grn, sir, condemnedBy, approvedBy, date });
 
     // Update local stock
@@ -1534,7 +1630,7 @@ function showBinCard(itemId, store) {
   const storeName = STORE_NAMES[store];
   const e0 = entries[0]; // most recent for header
 
-  document.getElementById('binCardPrintTitle').textContent = 'Bin Card — ' + e0.itemName;
+  document.getElementById('binCardPrintTitle').textContent = 'Bin Card - ' + e0.itemName;
 
   // Build print-style bin card matching the uploaded template
   const rows = entries.map((e,i) => `<tr>
@@ -1615,14 +1711,24 @@ function requirePIN(label, cb) {
   setTimeout(()=>document.getElementById('pinInput').focus(), 100);
 }
 function closePIN() { document.getElementById('pinOverlay').classList.remove('open'); S.pinCb=null; }
-function submitPIN() {
+// v4.1: the admin PIN is checked by the backend, the page never holds it in its source
+let _adminBusy = false;
+async function submitPIN() {
+  if (_adminBusy) return;
   const val = document.getElementById('pinInput').value;
-  if (val === '1234') {
+  const errEl = document.getElementById('pinError');
+  _adminBusy = true;
+  let ok = false, msg = 'Incorrect PIN. Try again.';
+  try { await api({ action:'checkAdmin', pin:val }); ok = true; } catch (e) { msg = e.message || msg; }
+  _adminBusy = false;
+  if (ok) {
+    S.adminPin = val;
     const cb = S.pinCb;
     closePIN();
     if (cb) cb();
   } else {
-    document.getElementById('pinError').style.display='block';
+    errEl.textContent = msg;
+    errEl.style.display='block';
     document.getElementById('pinInput').value='';
     document.getElementById('pinInput').focus();
   }
@@ -1681,7 +1787,7 @@ function catClass(cat) {
 // ============================================================
 // START
 // ============================================================
-window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('DOMContentLoaded', stStart);
 </script>
 </body>
 </html>
